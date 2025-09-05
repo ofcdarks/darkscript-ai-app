@@ -354,7 +354,7 @@ app.post('/api/generate', verifyToken, (req, res) => {
 
                     const response = await callApiWithRetries(geminiCall);
 
-                    if (response.data.candidates ? .[0] ? .content ? .parts ? .[0]) {
+                    if (response.data.candidates?.[0]?.content?.parts?.[0]) {
                         const text = response.data.candidates[0].content.parts[0].text;
                         return res.json({
                             data: schema ? JSON.parse(text) : {
