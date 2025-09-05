@@ -7,33 +7,23 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const axios = require('axios');
 const sqlite3 = require('sqlite3').verbose();
-const fs = require('fs');
 
 // 2. Configuração Inicial
 const app = express();
 const PORT = process.env.PORT || 3000;
-// Use a variável de ambiente para o segredo JWT. É mais seguro.
 const JWT_SECRET = process.env.JWT_SECRET || 'seu-segredo-super-secreto-padrao';
-// Use uma variável de ambiente para o caminho do banco de dados para persistência em contêineres
-const DB_PATH = process.env.DB_PATH || path.join(__dirname, 'darkscript.db');
-
-// Garante que o diretório para o banco de dados exista
-const dbDir = path.dirname(DB_PATH);
-if (!fs.existsSync(dbDir)) {
-    fs.mkdirSync(dbDir, { recursive: true });
-}
+const DB_FILE = path.join(__dirname, 'darkscript.db');
 
 // Middlewares
 app.use(express.json());
-// Servindo arquivos estáticos da pasta 'public'
 app.use(express.static(path.join(__dirname, 'public')));
 
 // 3. Conexão com o Banco de Dados SQLite
-const db = new sqlite3.Database(DB_PATH, (err) => {
+const db = new sqlite3.Database(DB_FILE, (err) => {
     if (err) {
         console.error('Erro ao conectar ao SQLite:', err.message);
     } else {
-        console.log(`Conectado ao banco de dados SQLite em: ${DB_PATH}`);
+        console.log('Conectado ao banco de dados SQLite.');
         initializeDb();
     }
 });
@@ -378,8 +368,6 @@ app.post('/api/admin/announcement', verifyToken, requireAdmin, (req, res) => {
 
 
 // 8. Rota Genérica
-// Esta rota deve vir por último. Ela garante que a SPA (Single Page Application) funcione corretamente,
-// tratando qualquer rota não encontrada pela API como uma solicitação para o frontend.
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
@@ -397,3 +385,4 @@ process.on('SIGINT', () => {
         process.exit(0);
     });
 });
+

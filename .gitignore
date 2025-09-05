@@ -1,0 +1,22 @@
+Dependências do Node.js
+node_modules
+
+Arquivos de ambiente - NUNCA adicione segredos ao Git
+.env
+*.env.local
+
+Arquivos de log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+Arquivo do banco de dados SQLite
+É recomendado não versionar o banco de dados diretamente,
+pois ele mudará constantemente no servidor.
+*.db
+*.db-journal
+
+Arquivos do sistema operacional
+.DS_Store
+Thumbs.db
