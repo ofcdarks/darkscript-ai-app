@@ -15,6 +15,12 @@
             background-color: #f3f4f6;
             color: #1f2937;
         }
+        .no-copy {
+            -webkit-user-select: none; /* Safari */
+            -moz-user-select: none; /* Firefox */
+            -ms-user-select: none; /* IE 10+ */
+            user-select: none; /* Standard syntax */
+        }
         .font-display { font-weight: 700; }
         .sidebar-btn { 
             transition: all 0.2s ease-in-out; 
@@ -368,6 +374,25 @@
     }
     const hideConfirmationModal = () => document.getElementById('confirmation-modal').style.display = 'none';
 
+    // --- Anti-Copy System ---
+    function activateAntiCopy() {
+        document.body.classList.add('no-copy');
+        document.addEventListener('contextmenu', event => {
+            event.preventDefault();
+            addToLog('Ação desativada para proteger o conteúdo.', true);
+        });
+        document.addEventListener('keydown', e => {
+            if (e.ctrlKey && ['c', 'u', 's'].includes(e.key.toLowerCase())) {
+                e.preventDefault();
+                addToLog('Ação desativada para proteger o conteúdo.', true);
+            }
+            if (e.key === 'F12') {
+                e.preventDefault();
+                addToLog('Ação desativada para proteger o conteúdo.', true);
+            }
+        });
+    }
+
     // --- App Initialization ---
     async function initializeApp(initialAnnouncement = null) {
         if (!appState.currentUser) return;
@@ -377,6 +402,7 @@
         
         buildSidebar();
         renderTabContent('script-writer');
+        activateAntiCopy();
         
         if(initialAnnouncement) showAnnouncement(initialAnnouncement);
     }
@@ -387,6 +413,7 @@
         const navItems = [
             { type: 'divider', label: 'Criação e Conteúdo' },
             { id: 'script-writer', icon: 'M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z', label: 'Criador de Roteiro' },
+            { id: 'viral-titles', icon: 'M15 15l-2 5L9 9l5-2 2 5z', label: 'Títulos Virais' },
             { id: 'scene-prompts', icon: 'M15.5 4l-3.5 3.5M15.5 4a2.121 2.121 0 00-3-3L10 3.5M15.5 4v.5A2.5 2.5 0 0113 7M3 14l3-3m0 0l3 3m-3-3v10a2 2 0 002 2h3.5', label: 'Prompts para Cenas'},
             { id: 'thumbnail-prompts', icon: 'M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z', label: 'Prompts de Thumbnail' },
             { type: 'divider', label: 'Otimização e Gestão' },
@@ -431,7 +458,8 @@
     const getLegendForTool = (toolId) => {
         const legends = {
             'script-writer': `<h4 class="font-semibold text-gray-800 mb-2">💡 Entendendo as Métricas</h4><ul class="space-y-2 text-sm text-gray-600 list-disc list-inside"><li><strong>Potencial de Retenção:</strong> Mede a capacidade do roteiro de manter o espectador assistindo.</li><li><strong>Clareza da Mensagem:</strong> Avalia quão fácil é entender a ideia central do vídeo.</li><li><strong>Potencial Viral:</strong> Estima a probabilidade do conteúdo ser amplamente compartilhado.</li></ul>`,
-            'thumbnail-prompts': `<h4 class="font-semibold text-gray-800 mb-2">💡 Entendendo as Métricas</h4><ul class="space-y-2 text-sm text-gray-600 list-disc list-inside"><li><strong>Potencial de CTR:</strong> Estimativa do poder de atração do clique na thumbnail gerada.</li><li><strong>Virada de Chave:</strong> A principal melhoria ou conceito aplicado no prompt.</li></ul>`
+            'thumbnail-prompts': `<h4 class="font-semibold text-gray-800 mb-2">💡 Entendendo as Métricas</h4><ul class="space-y-2 text-sm text-gray-600 list-disc list-inside"><li><strong>Potencial de CTR:</strong> Estimativa do poder de atração do clique na thumbnail gerada.</li><li><strong>Virada de Chave:</strong> A principal melhoria ou conceito aplicado no prompt.</li></ul>`,
+            'viral-titles': `<h4 class="font-semibold text-gray-800 mb-2">💡 Entendendo a Ferramenta</h4><p class="text-sm text-gray-600">Esta ferramenta unificada pode gerar tanto <strong>Títulos Prontos</strong> (com análise de pontuação) quanto <strong>Estruturas de Títulos</strong> (modelos para você preencher). Selecione o que precisa e deixe a IA fazer a mágica!</p>`
         };
         const legendHtml = legends[toolId] || '';
         if (!legendHtml) return '';
@@ -514,6 +542,36 @@
                         <div id="output" class="mt-6"></div>
                         <div id="script-pagination-controls" class="flex justify-center items-center gap-4 mt-4"></div>
                       </div>` 
+        },
+        "viral-titles": {
+            title: "Títulos Virais",
+            desc: "Crie títulos e estruturas magnéticas para multiplicar suas visualizações.",
+            content: `<div class="max-w-3xl mx-auto">
+                        <div class="card p-6 space-y-4">
+                            <input type="text" id="viral-topic" class="w-full px-4 py-3 rounded-lg form-input" placeholder="Tema Central (ex: como investir em ações)">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label for="viral-type" class="text-sm font-medium text-gray-700">Tipo de Geração</label>
+                                    <select id="viral-type" class="mt-1 w-full px-4 py-3 rounded-lg form-input">
+                                        <option value="titles">Gerar Títulos Prontos</option>
+                                        <option value="structures">Gerar Estruturas de Títulos</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label for="viral-lang" class="text-sm font-medium text-gray-700">Idioma</label>
+                                    <select id="viral-lang" class="mt-1 w-full px-4 py-3 rounded-lg form-input">
+                                        <option value="Português (Brasil)">Português (Brasil)</option>
+                                        <option value="Inglês">Inglês</option>
+                                        <option value="Espanhol">Espanhol</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <button id="generate-viral-content" class="w-full justify-center py-3 px-4 rounded-lg font-semibold primary-btn">Gerar Conteúdo</button>
+                        </div>
+                        <div id="legend-container" class="mt-6"></div>
+                        <div id="output" class="mt-6 space-y-4"></div>
+                        <button id="generate-more-viral-content" style="display:none;" class="w-full mt-4 bg-gray-200 text-gray-800 font-semibold py-2 px-4 rounded-lg hover:bg-gray-300">Gerar Mais</button>
+                    </div>`
         },
         "scene-prompts": { title: "Prompts para Cenas", desc: "Gere prompts de imagem para o seu roteiro, de forma automática ou manual.", content: `<div class="max-w-3xl mx-auto"><div class="card p-6 space-y-4"><div class="relative"><textarea id="scene-text" class="w-full h-40 px-4 py-3 rounded-lg form-input" placeholder="Cole o roteiro completo aqui..."></textarea><div id="scene-word-counter" class="absolute bottom-2 right-3 text-xs text-gray-500 bg-gray-100 px-2 py-0.5 rounded">0 palavras</div></div><div class="grid grid-cols-1 md:grid-cols-2 gap-4"><select id="scene-platform" class="w-full px-4 py-3 rounded-lg form-input"><option value="Midjourney">Midjourney</option><option value="Leonardo.AI">Leonardo.AI</option><option value="DALL-E 3">DALL-E 3</option><option value="Freepik">Freepik</option></select><select id="generation-mode" class="w-full px-4 py-3 rounded-lg form-input"><option value="auto">Geração Automática de Cenas</option><option value="manual">Geração Manual por Palavras</option></select></div><div id="manual-options" class="hidden items-center gap-2"><label class="text-sm">Gerar a cada</label><input type="number" value="100" id="scene-word-count" class="form-input w-20 text-center"><label class="text-sm">palavras.</label><span id="scene-preview" class="text-sm font-medium text-blue-600"></span></div><button id="generate-scene-prompts" class="w-full justify-center py-3 px-4 rounded-lg font-semibold primary-btn">Gerar Prompts de Cena</button></div><div id="output" class="mt-6 space-y-4"></div><div id="scene-pagination-controls" class="flex justify-center items-center gap-4 mt-4"></div></div>` },
         "thumbnail-prompts": { title: "Prompts de Thumbnail", desc: "Gere prompts otimizados para IAs de imagem.", content: `<div class="max-w-3xl mx-auto"><div class="card p-6 space-y-4"><input type="text" id="thumb-title" class="w-full px-4 py-3 rounded-lg form-input" placeholder="Título do Vídeo"><select id="thumb-platform" class="w-full px-4 py-3 rounded-lg form-input"><option value="Midjourney">Midjourney</option><option value="Leonardo.AI">Leonardo.AI</option><option value="DALL-E 3">DALL-E 3</option><option value="Freepik">Freepik</option></select><button id="generate-prompts" class="w-full justify-center py-3 px-4 rounded-lg font-semibold primary-btn">Gerar Prompts</button></div><div id="legend-container" class="mt-6"></div><div id="output" class="mt-6 space-y-4"></div><button id="generate-more-prompts" style="display:none;" class="w-full mt-4 bg-gray-200 text-gray-800 font-semibold py-2 px-4 rounded-lg hover:bg-gray-300">Gerar Mais</button></div>` },
@@ -722,6 +780,106 @@
             document.getElementById('legend-container').innerHTML = getLegendForTool('script-writer');
             renderScriptPage();
         },
+        'generate-viral-content': async (output, append = false) => {
+            const topic = document.getElementById('viral-topic').value.trim();
+            const type = document.getElementById('viral-type').value;
+            const lang = document.getElementById('viral-lang').value;
+            
+            if (!topic) { 
+                alert("Por favor, insira um tema."); 
+                return; 
+            }
+
+            let prompt, schema, renderer;
+
+            if (type === 'titles') {
+                prompt = `Aja como um copywriter de YouTube de elite. Crie 4 títulos virais e inéditos em "${lang}" sobre "${topic}". REGRAS: 1. **Combine de 2 a 4 modelos de títulos diferentes** (ex: "Lista" + "Aviso" + "Como Fazer") para criar cada título. 2. O título final NÃO PODE exceder 100 caracteres. 3. Responda APENAS com o JSON. Para cada título, forneça: 'title', 'category' (os modelos combinados), 'suggestion' (1 frase em português explicando a psicologia), e 'scores' (um objeto com 'impacto', 'clareza', 'curiosidade' de 0 a 100).`;
+                schema = {
+                    type: "ARRAY",
+                    items: {
+                        type: "OBJECT",
+                        properties: {
+                            title: { type: "STRING" },
+                            category: { type: "STRING" },
+                            suggestion: { type: "STRING" },
+                            scores: {
+                                type: "OBJECT",
+                                properties: {
+                                    impacto: { type: "NUMBER" },
+                                    clareza: { type: "NUMBER" },
+                                    curiosidade: { type: "NUMBER" }
+                                },
+                                required: ["impacto", "clareza", "curiosidade"]
+                            }
+                        },
+                        required: ["title", "category", "suggestion", "scores"]
+                    }
+                };
+                renderer = (result) => result.map(item => {
+                    const scores = item.scores || { impacto: 60, clareza: 60, curiosidade: 60 };
+                    const mainScore = (scores.impacto + scores.clareza + scores.curiosidade) / 3;
+                    return `
+                    <div class="card p-4 flex flex-col md:flex-row gap-4 items-start">
+                        <div class="flex-1 w-full">
+                            <div class="flex justify-between items-center mb-2">
+                                <h3 class="font-semibold text-lg">${item.title || 'Título Indisponível'}</h3>
+                                ${createCopyButton(item.title || '', 'p-1 rounded-md text-gray-600 bg-gray-200 hover:bg-gray-300')}
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <span class="text-xs font-medium bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full">${item.category || 'Categoria'}</span>
+                            </div>
+                        </div>
+                        <div class="w-full md:w-56 flex-shrink-0 border-t md:border-t-0 md:border-l pt-4 md:pt-0 md:pl-4 mt-4 md:mt-0">
+                            ${renderScoreCard('Potencial de Cliques', mainScore, scores, item.suggestion || 'Sem sugestão.')}
+                        </div>
+                    </div>`;
+                }).join('');
+            } else { // structures
+                prompt = `Aja como um copywriter de YouTube de elite. Crie 4 ESTRUTURAS de título inéditas e criativas em "${lang}" para vídeos sobre "${topic}". REGRAS: 1. **Combine de 2 a 4 modelos de títulos diferentes** para criar cada estrutura. 2. A estrutura final NÃO PODE exceder 100 caracteres. 3. Use placeholders como [DOR], [NÚMERO], [BENEFÍCIO]. 4. Responda APENAS com o JSON. Para cada estrutura, forneça: 'structure' (o modelo), 'category' (os modelos combinados), e 'explanation' (1 frase em português de como usar).`;
+                schema = {
+                    type: "ARRAY",
+                    items: {
+                        type: "OBJECT",
+                        properties: {
+                            structure: { type: "STRING" },
+                            category: { type: "STRING" },
+                            explanation: { type: "STRING" },
+                        },
+                        required: ["structure", "category", "explanation"]
+                    }
+                };
+                renderer = (result) => result.map(item => `
+                    <div class="card p-4">
+                        <div class="flex justify-between items-start mb-2">
+                            <h3 class="font-semibold text-lg flex-1">${item.structure || 'Estrutura Indisponível'}</h3>
+                            ${createCopyButton(item.structure || '', 'p-1 rounded-md text-gray-600 bg-gray-200 hover:bg-gray-300')}
+                        </div>
+                         <div class="flex items-center gap-2 mb-3">
+                            <span class="text-xs font-medium bg-green-100 text-green-800 px-2 py-0.5 rounded-full">${item.category || 'Categoria'}</span>
+                        </div>
+                        <p class="text-sm text-gray-600">${item.explanation || 'Sem explicação.'}</p>
+                    </div>
+                `).join('');
+            }
+
+            const result = await callAIModel(prompt, schema);
+            
+            if (!result || !Array.isArray(result) || result.length === 0) {
+                addToLog("A resposta da IA não está no formato esperado ou está vazia.", true);
+                output.innerHTML = '<p class="text-center text-red-600">Ocorreu um erro ao gerar o conteúdo. Por favor, tente novamente com um tema diferente.</p>';
+                return;
+            }
+
+            let html = renderer(result);
+            
+            if (append) {
+                output.insertAdjacentHTML('beforeend', html);
+            } else {
+                document.getElementById('legend-container').innerHTML = getLegendForTool('viral-titles');
+                output.innerHTML = html;
+            }
+            document.getElementById('generate-more-viral-content').style.display = 'block';
+        },
         'generate-scene-prompts': async(output) => {
             const text = document.getElementById('scene-text').value.trim();
             const platform = document.getElementById('scene-platform').value;
@@ -771,7 +929,7 @@
 
             const prompt = `Gere 2 prompts AVANÇADOS em INGLÊS para a IA '${platform}' para uma thumbnail sobre "${title}". Siga esta diretriz: ${platformConfigs[platform]}. Para cada prompt, forneça:
             1.  'score': uma pontuação de potencial de CTR (0-100).
-            2.  'suggestion': uma "virada de chave" (melhoria principal) em PORTUGUÊS, BEM CURTA, com no máximo 5 linhas.`;
+            2.  'suggestion': uma "virada de chave" (melhoria principal) em PORTUGÊS, BEM CURTA, com no máximo 5 linhas.`;
             
             const schema = { type: "ARRAY", items: { type: "OBJECT", properties: { prompt: { type: "STRING" }, score: { type: "NUMBER" }, suggestion: { type: "STRING" } } } };
             
@@ -928,6 +1086,15 @@
         if (tabId === 'scene-prompts'){
            initializeScenePrompts();
         }
+        if (tabId === 'viral-titles') {
+            const viralTypeSelect = document.getElementById('viral-type');
+            if (viralTypeSelect) {
+                viralTypeSelect.addEventListener('change', () => {
+                    document.getElementById('output').innerHTML = '';
+                    document.getElementById('generate-more-viral-content').style.display = 'none';
+                });
+            }
+        }
 
         const outputEl = document.getElementById('output');
         Object.keys(handlers).forEach(buttonId => {
@@ -942,6 +1109,11 @@
         const morePromptsBtn = document.getElementById('generate-more-prompts');
         if(morePromptsBtn){
             morePromptsBtn.addEventListener('click', () => handlers['generate-prompts'](outputEl, true));
+        }
+        
+        const moreViralContentBtn = document.getElementById('generate-more-viral-content');
+        if(moreViralContentBtn){
+            moreViralContentBtn.addEventListener('click', () => handlers['generate-viral-content'](outputEl, true));
         }
     }
 
@@ -1342,3 +1514,4 @@
     </script>
 </body>
 </html>
+
