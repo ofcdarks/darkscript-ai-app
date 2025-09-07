@@ -648,11 +648,12 @@
                                     <label for="script-lang" class="text-sm font-medium text-gray-700">Idioma</label>
                                     <select id="script-lang" class="mt-1 w-full px-4 py-3 rounded-lg form-input">
                                         <option value="Português (Brasil)">Português (Brasil)</option>
-                                        <option value="English (US)">Inglês (EUA)</option>
-                                        <option value="Spanish (Spain)">Espanhol (Espanha)</option>
-                                        <option value="German">Alemão</option>
-                                        <option value="French">Francês</option>
-                                        <option value="Italian">Italiano</option>
+                                        <option value="Inglês">Inglês (EUA)</option>
+                                        <option value="Espanhol">Espanhol (Espanha)</option>
+                                        <option value="Alemão">Alemão</option>
+                                        <option value="Francês">Francês</option>
+                                        <option value="Italiano">Italiano</option>
+                                        <option value="Japonês">Japonês</option>
                                     </select>
                                 </div>
                             </div>
@@ -815,15 +816,8 @@
 
         const parts = fullResult.script_parts;
         const totalPages = Math.ceil(parts.length / partsPerPage);
-        
-        const lang = document.getElementById('script-lang').value;
-        const cardTitles = {
-            'German': { retention: 'Retentionspotential', clarity: 'Klarheit der Botschaft', viral: 'Virales Potenzial', engagement: 'Engagement', comprehension: 'Verständnis', sharing: 'Teilen' },
-            'default': { retention: 'Potencial de Retenção', clarity: 'Clareza da Mensagem', viral: 'Potencial Viral', engagement: 'Engajamento', comprehension: 'Compreensão', sharing: 'Compartilhamento' }
-        };
-        const titles = cardTitles[lang] || cardTitles['default'];
 
-        let scoreCardsHtml = `<div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">${renderScoreCard(titles.retention, fullResult.scores.retention_potential, { [titles.engagement]: fullResult.scores.retention_potential })}${renderScoreCard(titles.clarity, fullResult.scores.clarity_score, { [titles.comprehension]: fullResult.scores.clarity_score })}${renderScoreCard(titles.viral, fullResult.scores.viral_potential, { [titles.sharing]: fullResult.scores.viral_potential })}</div>`;
+        let scoreCardsHtml = `<div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">${renderScoreCard('Potencial de Retenção', fullResult.scores.retention_potential, { 'Engajamento': fullResult.scores.retention_potential })}${renderScoreCard('Clareza da Mensagem', fullResult.scores.clarity_score, { 'Compreensão': fullResult.scores.clarity_score })}${renderScoreCard('Potencial Viral', fullResult.scores.viral_potential, { 'Compartilhamento': fullResult.scores.viral_potential })}</div>`;
         let actionButtonsHtml = `<div class="card p-4 mb-4 flex flex-wrap gap-4">
             <button id="copy-script-btn" class="flex-1 text-center py-2 px-4 rounded-lg font-semibold bg-blue-100 text-blue-800 hover:bg-blue-200">Copiar Roteiro</button>
             <button id="save-script-txt-btn" class="flex-1 text-center py-2 px-4 rounded-lg font-semibold bg-green-100 text-green-800 hover:bg-green-200">Salvar em .txt</button>
@@ -925,167 +919,6 @@
         }
     }
 
-    const getPromptByLanguage = (lang, data) => {
-        const { topic, niche, audience, tone, trendsLine, duration, parts, narrationStyle, ctaText, affiliateInstruction } = data;
-        
-        const templates = {
-            'Italian': {
-                main: `Sei DARKSCRIPT, uno sceneggiatore d'élite per YouTube. La tua unica missione è generare uno script completo, dettagliato e perfettamente strutturato in base alle specifiche esatte fornite. Non seguire le regole di struttura è inaccettabile.`,
-                specs: `**SPECIFICHE DELLO SCRIPT:**`,
-                topic: `- TEMA CENTRALE: ${topic}`,
-                niche: `- NICCHIA: ${niche}`,
-                audience: `- PUBBLICO DI RIFERIMENTO: ${audience}`,
-                tone: `- TONO NARRATIVO: ${tone}`,
-                lang: `- LINGUA: Italiano`,
-                trends: `- TERMINE DI TENDENZA: ${trendsLine}`,
-                duration: `- DURATA STIMATA: ${duration} minuti`,
-                triggers: `**TRIGGER PSICOLOGICI AVANZATI PER UN'ALTA RITENZIONE (OBBLIGATORIO):**`,
-                hook: `- **Gancio Iniziale Forte:** Inizia con una promessa audace, una domanda provocatoria o una dichiarazione che rompa uno schema per generare CURIOSITÀ IMMEDIATA.`,
-                loops: `- **Loop di Curiosità Aperti:** In ogni parte, introduci un nuovo mistero o una domanda a cui si risponderà solo più avanti, costringendo lo spettatore a continuare a guardare.`,
-                tension: `- **Picchi di Tensione e Rilassamento:** Alterna momenti di alta energia/tensione e momenti più tranquilli per creare un'altalena emotiva che catturi l'attenzione.`,
-                storytelling: `- **Storytelling Magnetico:** Utilizza una narrazione chiara con un inizio, uno sviluppo (con un conflitto crescente) e una fine (con una risoluzione soddisfacente o un cliffhanger per il video successivo).`,
-                rules: `**REGOLE ASSOLUTE E INVIOLABILI:**`,
-                rule1: `1. **REGOLA DI COMPLETEZZA (MASSIMA PRIORITÀ):** DEVI generare il contenuto completo per TUTTE le ${parts} parti richieste. È vietato fermarsi a metà.`,
-                rule2: `2. **REGOLA DI DENSITÀ DEL CONTENUTO (MASSIMA PRIORITÀ):** Ogni singola parte DEVE contenere circa **2500 CARATTERI** (circa 400 parole). Script con parti brevi (meno di 2000 caratteri) sono considerati un fallimento. Sii approfondito, dettagliato ed esplora l'argomento per raggiungere questo obiettivo in OGNI parte.`,
-                rule3: `3. **REGOLA DI STRUTTURA DEI PARAGRAFI:** Il contenuto denso di ogni parte (~2500 caratteri) DEVE essere suddiviso in esattamente **5 paragrafi** coerenti e ben scritti.`,
-                rule4: `4. **REGOLA DEL NUMERO DI PARTI:** Lo script finale DEVE contenere esattamente ${parts} parti. Né più, né meno.`,
-                rule5: `5. **NARRAZIONE E CTA:**`,
-                narration: `- Stile: ${narrationStyle}`,
-                cta: `- CTA: Includi inviti all'azione in modo organico nelle seguenti sezioni: ${ctaText}.`,
-                affiliate: affiliateInstruction,
-                output: `**ISTRUZIONI DI OUTPUT (FORMATO TESTO STRUTTURATO OBBLIGATORIO):**`,
-                output1: `- Sulla PRIMA riga, e SOLO sulla prima riga, inserisci i punteggi nel seguente formato JSON:\nSCORES:{"retention_potential": <score>, "clarity_score": <score>, "viral_potential": <score>}`,
-                output2: `- Dalla seconda riga, inizia lo script.`,
-                output3: `- Usa il seguente marcatore per separare OGNI parte dello script:\n[--PART <numero>: <titolo della parte>--]\n<contenuto della parte con 5 paragrafi e ~2500 caratteri>\n[--ENDPART--]`
-            },
-            'German': {
-                main: `Sie sind DARKSCRIPT, ein Elite-Drehbuchautor für YouTube. Ihre einzige Aufgabe ist es, ein vollständiges, detailliertes und perfekt strukturiertes Drehbuch gemäß den genauen Vorgaben zu erstellen. Das Nichtbefolgen der Strukturregeln ist inakzeptabel.`,
-                specs: `**DREHBUCH-SPEZIFIKATIONEN:**`,
-                topic: `- ZENTRALES THEMA: ${topic}`,
-                niche: `- NISCHE: ${niche}`,
-                audience: `- ZIELGRUPPE: ${audience}`,
-                tone: `- ERZÄHLTON: ${tone}`,
-                lang: `- SPRACHE: Deutsch`,
-                trends: `- TRENDBEGRIFF: ${trendsLine}`,
-                duration: `- GESCHÄTZTE DAUER: ${duration} Minuten`,
-                triggers: `**FORTGESCHRITTENE PSYCHOLOGISCHE TRIGGER FÜR HOHE BINDUNG (OBLIGATORISCH):**`,
-                hook: `- **Starker Anfangs-Hook:** Beginnen Sie mit einem kühnen Versprechen, einer provokanten Frage oder einer musterbrechenden Aussage, um SOFORTIGE NEUGIER zu wecken.`,
-                loops: `- **Offene Neugier-Schleifen:** Führen Sie in jedem Teil ein neues Rätsel oder eine Frage ein, die erst später beantwortet wird, um den Zuschauer zum Weiterschauen zu zwingen.`,
-                tension: `- **Spannungs- und Entspannungsspitzen:** Wechseln Sie zwischen Momenten hoher Energie/Spannung und ruhigeren Momenten, um eine emotionale Achterbahnfahrt zu schaffen, die die Aufmerksamkeit fesselt.`,
-                storytelling: `- **Magnetisches Storytelling:** Verwenden Sie eine klare Erzählung mit Anfang, Mitte (mit wachsendem Konflikt) und Ende (mit einer zufriedenstellenden Auflösung oder einem Cliffhanger für das nächste Video).`,
-                rules: `**ABSOLUTE UND UNVERLETZLICHE REGELN:**`,
-                rule1: `1. **VOLLSTÄNDIGKEITSREGEL (HÖCHSTE PRIORITÄT):** Sie MÜSSEN den vollständigen Inhalt für ALLE ${parts} angeforderten Teile generieren. Es ist verboten, mittendrin aufzuhören.`,
-                rule2: `2. **INHALTSDICHTE-REGEL (HÖCHSTE PRIORITÄT):** Jeder einzelne Teil MUSS ungefähr **2500 ZEICHEN** (etwa 400 Wörter) umfassen. Drehbücher mit kurzen Teilen (weniger als 2000 Zeichen) werden als Fehlschlag gewertet. Seien Sie tiefgründig, detailliert und erforschen Sie das Thema, um dieses Ziel in JEDEM Teil zu erreichen.`,
-                rule3: `3. **ABSATZSTRUKTUR-REGEL:** Der dichte Inhalt jedes Teils (~2500 Zeichen) MUSS in genau **5 zusammenhängende und gut geschriebene Absätze** unterteilt sein.`,
-                rule4: `4. **ANZAHL-DER-TEILE-REGEL:** Das endgültige Drehbuch MUSS genau ${parts} Teile enthalten. Nicht mehr und nicht weniger.`,
-                rule5: `5. **ERZÄHLUNG UND CTAs:**`,
-                narration: `- Stil: ${narrationStyle}`,
-                cta: `- CTAs: Fügen Sie Handlungsaufforderungen organisch in die folgenden Abschnitte ein: ${ctaText}.`,
-                affiliate: affiliateInstruction,
-                output: `**AUSGABEANWEISUNGEN (OBLIGATORISCHES STRUKTURIERTES TEXTFORMAT):**`,
-                output1: `- In der ERSTEN und NUR in der ersten Zeile die Bewertungen im folgenden JSON-Format platzieren:\nSCORES:{"retention_potential": <score>, "clarity_score": <score>, "viral_potential": <score>}`,
-                output2: `- Ab der zweiten Zeile mit dem Drehbuch beginnen.`,
-                output3: `- Verwenden Sie den folgenden Marker, um JEDEN Teil des Drehbuchs zu trennen:\n[--PART <nummer>: <titel des teils>--]\n<inhalt des teils mit 5 absätzen und ~2500 zeichen>\n[--ENDPART--]`
-            },
-            'French': {
-                 main: `Vous êtes DARKSCRIPT, un scénariste d'élite pour YouTube. Votre seule mission est de générer un script complet, détaillé et parfaitement structuré en fonction des spécifications exactes fournies. Ne pas suivre les règles de structure est inacceptable.`,
-                specs: `**SPÉCIFICATIONS DU SCRIPT :**`,
-                topic: `- THÈME CENTRAL : ${topic}`,
-                niche: `- NICHE : ${niche}`,
-                audience: `- PUBLIC CIBLE : ${audience}`,
-                tone: `- TON NARRATIF : ${tone}`,
-                lang: `- LANGUE : Français`,
-                trends: `- TERME TENDANCE : ${trendsLine}`,
-                duration: `- DURÉE ESTIMÉE : ${duration} minutes`,
-                triggers: `**DÉCLENCHEURS PSYCHOLOGIQUES AVANCÉS POUR UNE RÉTENTION ÉLEVÉE (OBLIGATOIRE) :**`,
-                hook: `- **Accroche Initiale Forte :** Commencez par une promesse audacieuse, une question provocante ou une déclaration qui brise un schéma pour susciter une CURIOSITÉ IMMÉDIATE.`,
-                loops: `- **Boucles de Curiosité Ouvertes :** Dans chaque partie, introduisez un nouveau mystère ou une question qui ne sera résolue que plus tard, forçant le spectateur à continuer de regarder.`,
-                tension: `- **Pics de Tension et de Relâchement :** Alternez entre des moments de haute énergie/tension et des moments plus calmes pour créer des montagnes russes émotionnelles qui captivent l'attention.`,
-                storytelling: `- **Storytelling Magnétique :** Utilisez une narration claire avec un début, un milieu (avec un conflit croissant) et une fin (avec une résolution satisfaisante ou un suspense pour la prochaine vidéo).`,
-                rules: `**RÈGLES ABSOLUES ET INVIOLABLES :**`,
-                rule1: `1. **RÈGLE DE COMPLÉTUDE (PRIORITÉ MAXIMALE) :** Vous DEVEZ générer le contenu complet pour TOUTES les ${parts} parties demandées. Il est interdit de s'arrêter en cours de route.`,
-                rule2: `2. **RÈGLE DE DENSITÉ DE CONTENU (PRIORITÉ MAXIMALE) :** Chaque partie individuelle DOIT contenir environ **2500 CARACTÈRES** (environ 400 mots). Les scripts avec des parties courtes (moins de 2000 caractères) sont considérés comme un échec. Soyez approfondi, détaillé et explorez le sujet pour atteindre cet objectif dans CHAQUE partie.`,
-                rule3: `3. **RÈGLE DE STRUCTURE DES PARAGRAPHES :** Le contenu dense de chaque partie (~2500 caractères) DOIT être divisé en exactement **5 paragraphes** cohérents et bien écrits.`,
-                rule4: `4. **RÈGLE DU NOMBRE DE PARTIES :** Le script final DOIT contenir exactement ${parts} parties. Ni plus, ni moins.`,
-                rule5: `5. **NARRATION ET CTAs :**`,
-                narration: `- Style : ${narrationStyle}`,
-                cta: `- CTAs : Incluez des appels à l'action de manière organique dans les sections suivantes : ${ctaText}.`,
-                affiliate: affiliateInstruction,
-                output: `**INSTRUCTIONS DE SORTIE (FORMAT DE TEXTE STRUCTURÉ OBLIGATOIRE) :**`,
-                output1: `- Sur la PREMIÈRE ligne, et UNIQUEMENT sur la première ligne, placez les scores au format JSON suivant :\nSCORES:{"retention_potential": <score>, "clarity_score": <score>, "viral_potential": <score>}`,
-                output2: `- À partir de la deuxième ligne, commencez le script.`,
-                output3: `- Utilisez le marqueur suivant pour séparer CHAQUE partie du script :\n[--PART <numéro>: <titre de la partie>--]\n<contenu de la partie avec 5 paragraphes et ~2500 caractères>\n[--ENDPART--]`
-            },
-            'Spanish (Spain)': {
-                main: `Eres DARKSCRIPT, un guionista de élite para YouTube. Tu única misión es generar un guion completo, detallado y perfectamente estructurado basándote en las especificaciones exactas proporcionadas. No seguir las reglas de estructura es inaceptable.`,
-                specs: `**ESPECIFICACIONES DEL GUION:**`,
-                topic: `- TEMA CENTRAL: ${topic}`,
-                niche: `- NICHO: ${niche}`,
-                audience: `- PÚBLICO OBJETIVO: ${audience}`,
-                tone: `- TONO NARRATIVO: ${tone}`,
-                lang: `- IDIOMA: Español`,
-                trends: `- TÉRMINO DE TENDENCIA: ${trendsLine}`,
-                duration: `- DURACIÓN ESTIMADA: ${duration} minutos`,
-                triggers: `**DISPARADORES PSICOLÓGICOS AVANZADOS PARA ALTA RETENCIÓN (OBLIGATORIO):**`,
-                hook: `- **Gancho Inicial Fuerte:** Comienza con una promesa audaz, una pregunta provocadora o una declaración que rompa un patrón para generar CURIOSIDAD INMEDIATA.`,
-                loops: `- **Bucles de Curiosidad Abiertos:** En cada parte, introduce un nuevo misterio o una pregunta que solo se responderá más adelante, obligando al espectador a seguir viendo.`,
-                tension: `- **Picos de Tensión y Alivio:** Alterna entre momentos de alta energía/tensión y momentos más tranquilos para crear una montaña rusa emocional que atrape la atención.`,
-                storytelling: `- **Storytelling Magnético:** Usa una narrativa clara con un principio, un desarrollo (con un conflicto creciente) y un final (con una resolución satisfactoria o un gancho para el próximo vídeo).`,
-                rules: `**REGLAS ABSOLUTAS E INQUEBRANTABLES:**`,
-                rule1: `1. **REGLA DE COMPLETITUD (MÁXIMA PRIORIDAD):** DEBES generar el contenido completo para TODAS las ${parts} partes solicitadas. Está prohibido detenerse a la mitad.`,
-                rule2: `2. **REGLA DE DENSIDAD DE CONTENIDO (MÁXIMA PRIORIDAD):** Cada parte individual DEBE tener aproximadamente **2500 CARACTERES** (unas 400 palabras). Los guiones con partes cortas (menos de 2000 caracteres) se consideran un fracaso. Sé profundo, detallado y explora el tema para alcanzar este objetivo en CADA parte.`,
-                rule3: `3. **REGLA DE ESTRUCTURA DE PÁRRAFOS:** El denso contenido de cada parte (~2500 caracteres) DEBE dividirse en exactamente **5 párrafos** coherentes y bien escritos.`,
-                rule4: `4. **REGLA DEL NÚMERO DE PARTES:** El guion final DEBE contener exactamente ${parts} partes. Ni más, ni menos.`,
-                rule5: `5. **NARRACIÓN Y CTAs:**`,
-                narration: `- Estilo: ${narrationStyle}`,
-                cta: `- CTAs: Incluye llamadas a la acción de forma orgánica en las siguientes secciones: ${ctaText}.`,
-                affiliate: affiliateInstruction,
-                output: `**INSTRUCCIONES DE SALIDA (FORMATO DE TEXTO ESTRUCTURADO OBLIGATORIO):**`,
-                output1: `- En la PRIMERA línea, y SÓLO en la primera línea, coloca las puntuaciones en el siguiente formato JSON:\nSCORES:{"retention_potential": <score>, "clarity_score": <score>, "viral_potential": <score>}`,
-                output2: `- A partir de la segunda línea, comienza el guion.`,
-                output3: `- Usa el siguiente marcador para separar CADA parte del guion:\n[--PART <número>: <título de la parte>--]\n<contenido de la parte con 5 párrafos y ~2500 caracteres>\n[--ENDPART--]`
-            },
-            'default': {
-                main: `Você é o DARKSCRIPT, um roteirista de elite para o YouTube. Sua única missão é gerar um roteiro completo, detalhado e perfeitamente estruturado com base nas especificações exatas fornecidas. Falhar em seguir as regras de estrutura é inaceitável.`,
-                specs: `**ESPECIFICAÇÕES DO ROTEIRO:**`,
-                topic: `- TEMA CENTRAL: ${topic}`,
-                niche: `- NICHO: ${niche}`,
-                audience: `- PÚBLICO: ${audience}`,
-                tone: `- TOM NARRATIVO: ${tone}`,
-                lang: `- IDIOMA: ${lang}`,
-                trends: `- TERMO EM ALTA: ${trendsLine}`,
-                duration: `- DURAÇÃO ESTIMADA: ${duration} minutos`,
-                triggers: `**GATILHOS PSICOLÓGICOS AVANÇADOS PARA ALTA RETENÇÃO (OBRIGATÓRIO):**`,
-                hook: `- **Hook Inicial Forte:** Comece com uma promessa ousada, uma pergunta provocativa ou uma declaração que quebre um padrão para gerar CURIOSIDADE IMEDIATA.`,
-                loops: `- **Loops de Curiosidade Abertos:** A cada parte, introduza um novo mistério ou uma pergunta que só será respondida mais à frente, forçando o espectador a continuar assistindo.`,
-                tension: `- **Picos de Tensão e Alívio:** Alterne entre momentos de alta energia/tensão e momentos mais calmos para criar uma montanha-russa emocional que prenda a atenção.`,
-                storytelling: `- **Storytelling Magnético:** Use uma narrativa clara com começo, meio (com conflito crescente) e fim (com uma resolução satisfatória ou um gancho para o próximo vídeo).`,
-                rules: `**REGRAS ABSOLUTAS E INQUEBRÁVEIS:**`,
-                rule1: `1.  **REGRA DE COMPLETUDE (PRIORIDADE MÁXIMA):** Você DEVE gerar o conteúdo completo para TODAS as ${parts} partes solicitadas. É proibido parar no meio.`,
-                rule2: `2.  **REGRA DE DENSIDADE DE CONTEÚDO (PRIORIDADE MÁXIMA):** Cada parte individual DEVE ter aproximadamente **2500 CARACTERES** (cerca de 400 palavras). Roteiros com partes curtas (menos de 2000 caracteres) são considerados falhas. Seja profundo, detalhado e explore o tópico para atingir essa meta em CADA parte.`,
-                rule3: `3.  **REGRA DE ESTRUTURA DE PARÁGRAFOS:** O conteúdo denso de cada parte (~2500 caracteres) DEVE ser dividido em exatamente **5 parágrafos** coesos e bem escritos.`,
-                rule4: `4.  **REGRA DE NÚMERO DE PARTES:** O roteiro final DEVE conter exatamente ${parts} partes. Nem mais, nem menos.`,
-                rule5: `5.  **NARRAÇÃO E CTAS:**`,
-                narration: `- Estilo: ${narrationStyle}`,
-                cta: `- CTAs: Inclua chamadas para ação organicamente nas seguintes seções: ${ctaText}.`,
-                affiliate: affiliateInstruction,
-                output: `**INSTRUÇÕES DE SAÍDA (FORMATO DE TEXTO ESTRUTURADO OBRIGATÓRIO):**`,
-                output1: `- Na PRIMEIRA linha, e SOMENTE na primeira linha, coloque as pontuações no seguinte formato JSON:\nSCORES:{"retention_potential": <score>, "clarity_score": <score>, "viral_potential": <score>}`,
-                output2: `- A partir da segunda linha, inicie o roteiro.`,
-                output3: `- Use o seguinte marcador para separar CADA parte do roteiro:\n[--PART <número>: <título da parte>--]\n<conteúdo da parte com 5 parágrafos e ~2500 caracteres>\n[--ENDPART--]`
-            }
-        };
-
-        const t = templates[lang] || templates['default'];
-        
-        return [
-            t.main, t.specs, t.topic, t.niche, t.audience, t.tone, t.lang,
-            (trendsLine ? t.trends : ''), t.duration, t.triggers, t.hook, t.loops,
-            t.tension, t.storytelling, t.rules, t.rule1, t.rule2, t.rule3, t.rule4, t.rule5,
-            t.narration, t.cta, t.affiliate, t.output, t.output1, t.output2, t.output3
-        ].filter(Boolean).join('\n\n');
-    }
-
 
     const handlers = {
         'generate-script': async (output) => {
@@ -1112,17 +945,70 @@
             }
 
             const parts = document.getElementById('script-parts').value;
-            
-            const promptData = {
-                topic, niche, audience, tone, lang, duration, parts,
-                trendsLine: trendsTerm,
-                narrationStyle: narrationOnly ? "100% narração pura para voice-over." : "Narração com descrições visuais concisas.",
-                ctaText: ctaPositions.length > 0 ? ctaPositions.join(', ') : 'meio',
-                affiliateInstruction: includeAffiliate ? `INSTRUÇÃO ADICIONAL (ALTA PRIORIDADE): - Integre de forma NATURAL e PERSUASIVA uma menção ao seguinte produto de afiliação no roteiro: "${affiliateProduct}".` : ''
-            };
-            
-            const prompt = getPromptByLanguage(lang, promptData);
+            const trendsLine = trendsTerm ? `- Termo de Pesquisa (Google Trends): ${trendsTerm}\n` : '';
+            const affiliateInstruction = includeAffiliate ? `
+                INSTRUÇÃO ADICIONAL (ALTA PRIORIDADE):
+                - Integre de forma NATURAL e PERSUASIVA uma menção ao seguinte produto de afiliação no roteiro: "${affiliateProduct}".
+            ` : '';
 
+            // This new prompt structure avoids asking for a single large JSON, which was causing errors.
+            // It asks for structured text that we can parse reliably on the client-side.
+            let prompt = `
+                Você é o DARKSCRIPT, um roteirista de elite para o YouTube. Sua única missão é gerar um roteiro completo, detalhado e perfeitamente estruturado com base nas especificações exatas fornecidas. Falhar em seguir as regras de estrutura é inaceitável.
+
+                **ESPECIFICAÇÕES DO ROTEIRO:**
+                - TEMA CENTRAL: ${topic}
+                - NICHO: ${niche}
+                - PÚBLICO: ${audience}
+                - TOM NARRATIVO: ${tone}
+                - IDIOMA: ${lang}
+                ${trendsLine ? `- TERMO EM ALTA: ${trendsTerm}\n` : ''}- DURAÇÃO ESTIMADA: ${duration} minutos
+
+                **GATILHOS PSICOLÓGICOS AVANÇADOS PARA ALTA RETENÇÃO (OBRIGATÓRIO):**
+                - **Hook Inicial Forte:** Comece com uma promessa ousada, uma pergunta provocativa ou uma declaração que quebre um padrão para gerar CURIOSIDADE IMEDIATA.
+                - **Loops de Curiosidade Abertos:** A cada parte, introduza um novo mistério ou uma pergunta que só será respondida mais à frente, forçando o espectador a continuar assistindo.
+                - **Picos de Tensão e Alívio:** Alterne entre momentos de alta energia/tensão e momentos mais calmos para criar uma montanha-russa emocional que prenda a atenção.
+                - **Storytelling Magnético:** Use uma narrativa clara com começo, meio (com conflito crescente) e fim (com uma resolução satisfatória ou um gancho para o próximo vídeo).
+
+                **REGRAS ABSOLUTAS E INQUEBRÁVEIS:**
+
+                1.  **REGRA DE COMPLETUDE (PRIORIDADE MÁXIMA):** Você DEVE gerar o conteúdo completo para TODAS as ${parts} partes solicitadas. É proibido parar no meio.
+
+                2.  **REGRA DE DENSIDADE DE CONTEÚDO (PRIORIDADE MÁXIMA):** Cada parte individual DEVE ter aproximadamente **2500 CARACTERES** (cerca de 400 palavras). Roteiros com partes curtas (menos de 2000 caracteres) são considerados falhas. Seja profundo, detalhado e explore o tópico para atingir essa meta em CADA parte.
+
+                3.  **REGRA DE ESTRUTURA DE PARÁGRAFOS:** O conteúdo denso de cada parte (~2500 caracteres) DEVE ser dividido em exatamente **5 parágrafos** coesos e bem escritos.
+
+                4.  **REGRA DE NÚMERO DE PARTES:** O roteiro final DEVE conter exatamente ${parts} partes. Nem mais, nem menos.
+
+                5.  **NARRAÇÃO E CTAS:**
+                    -   Estilo: ${narrationOnly ? "100% narração pura para voice-over." : "Narração com descrições visuais concisas."}
+                    -   CTAs: Inclua chamadas para ação organicamente nas seguintes seções: ${ctaPositions.length > 0 ? ctaPositions.join(', ') : 'meio'}.
+                    ${affiliateInstruction}
+
+                **INSTRUÇÕES DE SAÍDA (FORMATO DE TEXTO ESTRUTURADO OBRIGATÓRIO):**
+                - Na PRIMEIRA linha, e SOMENTE na primeira linha, coloque as pontuações no seguinte formato JSON:
+                SCORES:{"retention_potential": <score>, "clarity_score": <score>, "viral_potential": <score>}
+                - A partir da segunda linha, inicie o roteiro.
+                - Use o seguinte marcador para separar CADA parte do roteiro:
+                [--PART <número>: <título da parte>--]
+                <conteúdo da parte com 5 parágrafos e ~2500 caracteres>
+                [--ENDPART--]
+                
+                Exemplo de formato de saída:
+                SCORES:{"retention_potential": 90, "clarity_score": 95, "viral_potential": 88}
+                [--PART 1: A Introdução Chocante--]
+                Texto do parágrafo 1...
+                Texto do parágrafo 2...
+                Texto do parágrafo 3...
+                Texto do parágrafo 4...
+                Texto do parágrafo 5...
+                [--ENDPART--]
+                [--PART 2: O Ponto de Virada--]
+                Texto do parágrafo 1...
+                ...
+                [--ENDPART--]
+            `;
+            
             // We ask for TEXT now, not JSON, to avoid formatting errors from the AI.
             const resultText = (await callAIModel(prompt, null)).text;
 
@@ -1951,6 +1837,8 @@
     });
 
     </script>
+</body>
+</html>
 </body>
 </html>
 

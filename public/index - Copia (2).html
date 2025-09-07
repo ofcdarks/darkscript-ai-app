@@ -8,20 +8,20 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@500;600&display=swap" rel="stylesheet">
     <style>
         body { 
             font-family: 'Inter', sans-serif; 
             background-color: #f3f4f6;
             color: #1f2937;
         }
+        .font-premium { font-family: 'Poppins', sans-serif; }
         .no-copy {
             -webkit-user-select: none; /* Safari */
             -moz-user-select: none; /* Firefox */
             -ms-user-select: none; /* IE 10+ */
             user-select: none; /* Standard syntax */
         }
-        .font-display { font-weight: 700; }
         .sidebar-btn { 
             transition: all 0.2s ease-in-out; 
             color: #4b5563;
@@ -89,6 +89,29 @@
             transition: background-color 0.3s, color 0.3s;
         }
 
+        /* Premium Progress Modal */
+        #progress-circle-bg { stroke: #e5e7eb; }
+        #progress-circle {
+            stroke: #3b82f6;
+            transition: stroke-dashoffset 0.5s ease-out;
+            transform: rotate(-90deg);
+            transform-origin: 50% 50%;
+        }
+        
+        /* Success Toast */
+        #success-toast {
+            position: fixed;
+            bottom: -100px;
+            left: 50%;
+            transform: translateX(-50%);
+            transition: bottom 0.5s ease-in-out;
+            z-index: 10000;
+        }
+        #success-toast.show {
+            bottom: 20px;
+        }
+
+
         /* Toggle Switch */
         .switch { position: relative; display: inline-block; width: 60px; height: 34px; }
         .switch input { opacity: 0; width: 0; height: 0; }
@@ -97,7 +120,6 @@
         input:checked + .slider { background-color: #2563eb; }
         input:focus + .slider { box-shadow: 0 0 1px #2563eb; }
         input:checked + .slider:before { transform: translateX(26px); }
-
 
         @media (max-width: 768px) {
             #app-container { flex-direction: column; }
@@ -181,10 +203,16 @@
     </div>
     
     <!-- Modal de Progresso -->
-    <div id="progress-modal" style="display: none;" class="fixed inset-0 bg-white/80 backdrop-blur-sm flex items-center justify-center z-50">
-        <div class="card p-6 text-center shadow-2xl">
-            <svg class="animate-spin h-8 w-8 text-blue-500 mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
-            <p id="progress-phrase" class="text-sm text-gray-600 mt-2 font-medium">A processar...</p>
+    <div id="progress-modal" style="display: none;" class="fixed inset-0 bg-white/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+        <div class="card p-8 text-center shadow-2xl w-full max-w-md rounded-2xl">
+            <div class="relative w-24 h-24 mx-auto mb-6">
+                 <svg class="w-full h-full" viewBox="0 0 100 100">
+                    <circle id="progress-circle-bg" stroke-width="8" fill="transparent" r="45" cx="50" cy="50" />
+                    <circle id="progress-circle" stroke-width="8" stroke-linecap="round" fill="transparent" r="45" cx="50" cy="50" />
+                </svg>
+                <div id="progress-percentage" class="absolute inset-0 flex items-center justify-center text-2xl font-bold text-blue-600">0%</div>
+            </div>
+             <p id="progress-phrase" class="font-premium text-lg text-gray-700 font-medium h-12 flex items-center justify-center"></p>
         </div>
     </div>
     
@@ -230,6 +258,14 @@
             </div>
         </div>
     </div>
+
+    <!-- Toast de Sucesso -->
+     <div id="success-toast" class="bg-green-500 text-white font-semibold py-3 px-6 rounded-full shadow-lg flex items-center gap-2">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+        <span id="success-toast-message"></span>
+    </div>
     
     <script>
     // --- Global State Management ---
@@ -238,7 +274,10 @@
         adminPanel: {
             active: { currentPage: 1, limit: 10 },
             pending: { currentPage: 1, limit: 10 }
-        }
+        },
+        progressInterval: null,
+        phraseInterval: null,
+        toastTimeout: null
     };
     
     // --- Utility Functions ---
@@ -247,16 +286,96 @@
             document.getElementById(id).style.display = (id === screenId) ? 'flex' : 'none';
         });
     };
-    const showProgressModal = (phrase = 'A processar...') => {
-        document.getElementById('progress-phrase').textContent = phrase;
+    
+    const showProgressModal = () => {
+        const phrases = [
+            "DarkScript está forjando seu próximo roteiro viral...",
+            "Grandes canais começaram com um único script. O seu está a caminho.",
+            "Analisando os segredos do algoritmo para você...",
+            "A consistência é a chave. Continue criando.",
+            "Cada roteiro é um passo em direção ao seu sucesso.",
+            "Transformando sua ideia em um roteiro magnético...",
+            "Prepare-se para cativar sua audiência."
+        ];
+        const phraseEl = document.getElementById('progress-phrase');
+        const circleEl = document.getElementById('progress-circle');
+        const percentageEl = document.getElementById('progress-percentage');
+        const radius = circleEl.r.baseVal.value;
+        const circumference = 2 * Math.PI * radius;
+
+        circleEl.style.strokeDasharray = `${circumference} ${circumference}`;
+        
+        let phraseIndex = 0;
+        phraseEl.textContent = phrases[phraseIndex];
+        
+        appState.phraseInterval = setInterval(() => {
+            phraseIndex = (phraseIndex + 1) % phrases.length;
+            phraseEl.textContent = phrases[phraseIndex];
+        }, 3500);
+
+        let progress = 0;
+        percentageEl.textContent = `0%`;
+        circleEl.style.strokeDashoffset = circumference;
+        appState.progressInterval = setInterval(() => {
+            if (progress < 95) { // Stop at 95% to wait for completion
+                progress += 1;
+                const offset = circumference - (progress / 100) * circumference;
+                circleEl.style.strokeDashoffset = offset;
+                percentageEl.textContent = `${Math.round(progress)}%`;
+            }
+        }, 200);
+
         document.getElementById('progress-modal').style.display = 'flex';
     };
-    const hideProgressModal = () => document.getElementById('progress-modal').style.display = 'none';
+
+    const hideProgressModal = () => {
+        clearInterval(appState.progressInterval);
+        clearInterval(appState.phraseInterval);
+        appState.progressInterval = null;
+        appState.phraseInterval = null;
+        
+        const circleEl = document.getElementById('progress-circle');
+        const percentageEl = document.getElementById('progress-percentage');
+        const radius = circleEl.r.baseVal.value;
+        const circumference = 2 * Math.PI * radius;
+        
+        circleEl.style.strokeDashoffset = 0; // Animate to 100%
+        percentageEl.textContent = `100%`;
+
+        setTimeout(() => {
+            document.getElementById('progress-modal').style.display = 'none';
+        }, 500);
+    };
+
+    const showSuccessToast = (message) => {
+        const toast = document.getElementById('success-toast');
+        document.getElementById('success-toast-message').textContent = message;
+        
+        if (appState.toastTimeout) clearTimeout(appState.toastTimeout);
+
+        toast.classList.add('show');
+        appState.toastTimeout = setTimeout(() => {
+            toast.classList.remove('show');
+        }, 3000);
+    };
+
     const addToLog = (message, isError = false) => { 
         const logBar = document.getElementById('log-bar');
         document.getElementById('log-message').textContent = message; 
         logBar.style.backgroundColor = isError ? '#fee2e2' : '#dbeafe'; // red-100 or blue-100
         logBar.style.color = isError ? '#991b1b' : '#1e40af'; // red-800 or blue-800
+    };
+    const downloadAsTxt = (content, filename) => {
+        const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `${filename}.txt`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        showSuccessToast(`${filename}.txt baixado!`);
     };
 
 
@@ -467,7 +586,7 @@
     };
 
     async function callAIModel(prompt, schema = null) {
-        showProgressModal('Analisando os alvos...');
+        showProgressModal();
         addToLog('Comunicando com a IA...');
         try {
             const result = await apiRequest('/api/generate', 'POST', { prompt, schema });
@@ -487,7 +606,7 @@
             title: "Criador de Roteiro", 
             desc: "Gere roteiros envolventes e otimizados para o seu canal.", 
             content: `<div class="max-w-3xl mx-auto">
-                        <div class="card p-6 space-y-4">
+                        <form id="script-writer-form-container" class="card p-6 space-y-4">
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div>
                                     <label for="script-niche" class="text-sm font-medium text-gray-700">Nicho do Canal</label>
@@ -519,10 +638,24 @@
                                     <label for="script-lang" class="text-sm font-medium text-gray-700">Idioma</label>
                                     <select id="script-lang" class="mt-1 w-full px-4 py-3 rounded-lg form-input">
                                         <option value="Português (Brasil)">Português (Brasil)</option>
-                                        <option value="Inglês">Inglês</option>
-                                        <option value="Espanhol">Espanhol</option>
+                                        <option value="Inglês">Inglês (EUA)</option>
+                                        <option value="Espanhol">Espanhol (Espanha)</option>
+                                        <option value="Alemão">Alemão</option>
+                                        <option value="Francês">Francês</option>
+                                        <option value="Italiano">Italiano</option>
+                                        <option value="Japonês">Japonês</option>
                                     </select>
                                 </div>
+                            </div>
+                            <div>
+                               <label for="script-tone" class="text-sm font-medium text-gray-700">Tom Narrativo</label>
+                               <select id="script-tone" class="mt-1 w-full px-4 py-3 rounded-lg form-input">
+                                   <option value="envolvente e misterioso">Envolvente e Misterioso</option>
+                                   <option value="informativo e claro">Informativo e Claro</option>
+                                   <option value="cômico e divertido">Cômico e Divertido</option>
+                                   <option value="sério e formal">Sério e Formal</option>
+                                   <option value="inspirador e motivacional">Inspirador e Motivacional</option>
+                               </select>
                             </div>
                              <div>
                                 <label class="text-sm font-medium text-gray-700">Posição do CTA (Chamada para Ação)</label>
@@ -532,15 +665,26 @@
                                     <div class="flex items-center"><input id="cta-final" type="checkbox" class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"><label for="cta-final" class="ml-2 text-sm">Final</label></div>
                                 </div>
                              </div>
-                            <div class="flex items-center gap-2">
-                               <input type="checkbox" id="script-narration" class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500">
-                               <label for="script-narration" class="text-sm text-gray-700">Apenas Narração (para Voice Over)</label>
+                            <div class="flex items-center justify-between flex-wrap gap-4">
+                               <div class="flex items-center gap-2">
+                                 <input type="checkbox" id="script-narration" class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                                 <label for="script-narration" class="text-sm text-gray-700">Apenas Narração (para Voice Over)</label>
+                               </div>
+                               <div class="flex items-center gap-2">
+                                 <input type="checkbox" id="include-affiliate-product" class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                                 <label for="include-affiliate-product" class="text-sm text-gray-700 font-medium">Incluir produto de afiliação</label>
+                               </div>
                             </div>
-                            <button id="generate-script" class="w-full justify-center py-3 px-4 rounded-lg font-semibold primary-btn">Gerar Roteiro</button>
-                        </div>
+                            <div id="affiliate-product-container" style="display: none;">
+                               <label for="affiliate-product-description" class="text-sm font-medium text-gray-700">Descreva o Produto</label>
+                               <input type="text" id="affiliate-product-description" class="mt-1 w-full px-4 py-3 rounded-lg form-input" placeholder="ex: um curso online sobre marketing digital">
+                            </div>
+                            <button id="generate-script" type="button" class="w-full justify-center py-3 px-4 rounded-lg font-semibold primary-btn">Gerar Roteiro</button>
+                        </form>
                         <div id="legend-container" class="mt-6"></div>
                         <div id="output" class="mt-6"></div>
                         <div id="script-pagination-controls" class="flex justify-center items-center gap-4 mt-4"></div>
+                        <div id="script-history-container" class="mt-8"></div>
                       </div>` 
         },
         "viral-titles": {
@@ -573,8 +717,8 @@
                         <button id="generate-more-viral-content" style="display:none;" class="w-full mt-4 bg-gray-200 text-gray-800 font-semibold py-2 px-4 rounded-lg hover:bg-gray-300">Gerar Mais</button>
                     </div>`
         },
-        "scene-prompts": { title: "Prompts para Cenas", desc: "Gere prompts de imagem para o seu roteiro, de forma automática ou manual.", content: `<div class="max-w-3xl mx-auto"><div class="card p-6 space-y-4"><div class="relative"><textarea id="scene-text" class="w-full h-40 px-4 py-3 rounded-lg form-input" placeholder="Cole o roteiro completo aqui..."></textarea><div id="scene-word-counter" class="absolute bottom-2 right-3 text-xs text-gray-500 bg-gray-100 px-2 py-0.5 rounded">0 palavras</div></div><div class="grid grid-cols-1 md:grid-cols-2 gap-4"><select id="scene-platform" class="w-full px-4 py-3 rounded-lg form-input"><option value="Midjourney">Midjourney</option><option value="Leonardo.AI">Leonardo.AI</option><option value="DALL-E 3">DALL-E 3</option><option value="Freepik">Freepik</option></select><select id="generation-mode" class="w-full px-4 py-3 rounded-lg form-input"><option value="auto">Geração Automática de Cenas</option><option value="manual">Geração Manual por Palavras</option></select></div><div id="manual-options" class="hidden items-center gap-2"><label class="text-sm">Gerar a cada</label><input type="number" value="100" id="scene-word-count" class="form-input w-20 text-center"><label class="text-sm">palavras.</label><span id="scene-preview" class="text-sm font-medium text-blue-600"></span></div><button id="generate-scene-prompts" class="w-full justify-center py-3 px-4 rounded-lg font-semibold primary-btn">Gerar Prompts de Cena</button></div><div id="output" class="mt-6 space-y-4"></div><div id="scene-pagination-controls" class="flex justify-center items-center gap-4 mt-4"></div></div>` },
-        "thumbnail-prompts": { title: "Prompts de Thumbnail", desc: "Gere prompts otimizados para IAs de imagem.", content: `<div class="max-w-3xl mx-auto"><div class="card p-6 space-y-4"><input type="text" id="thumb-title" class="w-full px-4 py-3 rounded-lg form-input" placeholder="Título do Vídeo"><select id="thumb-platform" class="w-full px-4 py-3 rounded-lg form-input"><option value="Midjourney">Midjourney</option><option value="Leonardo.AI">Leonardo.AI</option><option value="DALL-E 3">DALL-E 3</option><option value="Freepik">Freepik</option></select><button id="generate-prompts" class="w-full justify-center py-3 px-4 rounded-lg font-semibold primary-btn">Gerar Prompts</button></div><div id="legend-container" class="mt-6"></div><div id="output" class="mt-6 space-y-4"></div><button id="generate-more-prompts" style="display:none;" class="w-full mt-4 bg-gray-200 text-gray-800 font-semibold py-2 px-4 rounded-lg hover:bg-gray-300">Gerar Mais</button></div>` },
+        "scene-prompts": { title: "Prompts para Cenas", desc: "Gere prompts de imagem para o seu roteiro, de forma automática ou manual.", content: `<div class="max-w-3xl mx-auto"><div class="card p-6 space-y-4"><div class="relative"><textarea id="scene-text" class="w-full h-40 px-4 py-3 rounded-lg form-input" placeholder="Cole o roteiro completo aqui..."></textarea><div id="scene-word-counter" class="absolute bottom-2 right-3 text-xs text-gray-500 bg-gray-100 px-2 py-0.5 rounded">0 palavras</div></div><div class="grid grid-cols-1 md:grid-cols-2 gap-4"><select id="scene-platform" class="w-full px-4 py-3 rounded-lg form-input"><option value="Midjourney">Midjourney</option><option value="Leonardo.AI">Leonardo.AI</option><option value="DALL-E 3">DALL-E 3</option><option value="Wisk">Wisk</option><option value="Nano Banana">Nano Banana</option><option value="Flux">Flux</option><option value="Freepik">Freepik</option></select><select id="generation-mode" class="w-full px-4 py-3 rounded-lg form-input"><option value="auto">Geração Automática de Cenas</option><option value="manual">Geração Manual por Palavras</option></select></div><div id="manual-options" class="hidden items-center gap-2"><label class="text-sm">Gerar a cada</label><input type="number" value="100" id="scene-word-count" class="form-input w-20 text-center"><label class="text-sm">palavras.</label><span id="scene-preview" class="text-sm font-medium text-blue-600"></span></div><button id="generate-scene-prompts" class="w-full justify-center py-3 px-4 rounded-lg font-semibold primary-btn">Gerar Prompts de Cena</button></div><div id="output" class="mt-6 space-y-4"></div><div id="scene-pagination-controls" class="flex justify-center items-center gap-4 mt-4"></div></div>` },
+        "thumbnail-prompts": { title: "Prompts de Thumbnail", desc: "Gere prompts otimizados para IAs de imagem.", content: `<div class="max-w-3xl mx-auto"><div class="card p-6 space-y-4"><input type="text" id="thumb-title" class="w-full px-4 py-3 rounded-lg form-input" placeholder="Título do Vídeo"><select id="thumb-platform" class="w-full px-4 py-3 rounded-lg form-input"><option value="Midjourney">Midjourney</option><option value="Leonardo.AI">Leonardo.AI</option><option value="DALL-E 3">DALL-E 3</option><option value="Wisk">Wisk</option><option value="Nano Banana">Nano Banana</option><option value="Flux">Flux</option><option value="Freepik">Freepik</option></select><button id="generate-prompts" class="w-full justify-center py-3 px-4 rounded-lg font-semibold primary-btn">Gerar Prompts</button></div><div id="legend-container" class="mt-6"></div><div id="output" class="mt-6 space-y-4"></div><div id="thumb-actions" class="mt-4"></div><button id="generate-more-prompts" style="display:none;" class="w-full mt-4 bg-gray-200 text-gray-800 font-semibold py-2 px-4 rounded-lg hover:bg-gray-300">Gerar Mais</button></div>` },
         "srt-converter": { title: "Conversor de SRT", desc: "Converta texto para o formato de legenda .SRT.", content: `<div class="max-w-3xl mx-auto"><div class="card p-6 space-y-4"><textarea id="srt-input-text" class="w-full h-40 px-4 py-3 rounded-lg form-input" placeholder="Cole o texto completo aqui..."></textarea><div class="flex items-center gap-4 justify-center"><label for="srt-char-limit" class="text-sm font-medium text-gray-700">Limite de Caracteres (Automático: 500):</label><input type="number" id="srt-char-limit" class="form-input w-24 text-center" value="500"></div><button id="convert-to-srt" class="w-full justify-center py-3 px-4 rounded-lg font-semibold primary-btn">Converter para SRT</button></div><div id="output" class="mt-6"></div></div>` },
         "text-divider": { title: "Divisor de Texto", desc: "Analise seu roteiro e divida-o em partes menores para facilitar a narração.", content: `<div class="max-w-3xl mx-auto"><div class="card p-6"><div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6"><div class="bg-gray-100 p-4 rounded-lg text-center"><p class="text-sm text-gray-500">Palavras</p><p id="word-count" class="text-3xl font-bold">0</p></div><div class="bg-gray-100 p-4 rounded-lg text-center"><p class="text-sm text-gray-500">Caracteres</p><p id="char-count" class="text-3xl font-bold">0</p></div><div class="bg-gray-100 p-4 rounded-lg text-center"><p class="text-sm text-gray-500">Tempo de Narração</p><p id="time-estimate" class="text-3xl font-bold">00:00</p></div></div><textarea id="text-divider-input" class="w-full h-40 px-4 py-3 rounded-lg form-input mb-4" placeholder="Cole o roteiro completo aqui..."></textarea><div class="flex flex-wrap items-center justify-center gap-4"><label for="split-chunk-size" class="text-sm">Dividir a cada</label><input type="number" id="split-chunk-size" class="px-3 py-2 rounded-lg form-input w-24 text-center" value="150"><select id="split-chunk-type" class="px-3 py-2 rounded-lg form-input"><option value="word">palavras</option><option value="char">caracteres</option></select><button id="split-text-btn" class="py-2 px-6 rounded-lg font-semibold primary-btn">Dividir</button></div></div><div id="output" class="mt-6 space-y-4"></div></div>` },
         "settings": { title: "Configurações", desc: "Gerencie e valide as suas chaves de API.", content: `<div class="max-w-3xl mx-auto card p-6 space-y-6"><h3 class="text-lg font-semibold">Chaves de API</h3><div class="space-y-4"><div><label class="block text-sm font-medium text-gray-700">OpenAI API Key (Preferencial) <a href="https://platform.openai.com/api-keys" target="_blank" class="text-blue-600 hover:underline text-xs">(obter)</a></label><input type="password" id="openai-key" class="mt-1 block w-full px-3 py-2 rounded-lg form-input"></div><hr/><div><label class="block text-sm font-medium text-gray-700">Gemini API Key (Principal) <a href="https://aistudio.google.com/app/apikey" target="_blank" class="text-blue-600 hover:underline text-xs">(obter)</a></label><input type="password" id="gemini-key-1" class="mt-1 block w-full px-3 py-2 rounded-lg form-input"></div><div><label class="block text-sm font-medium text-gray-700">Gemini API Key (Reserva 1)</label><input type="password" id="gemini-key-2" class="mt-1 block w-full px-3 py-2 rounded-lg form-input"></div><div><label class="block text-sm font-medium text-gray-700">Gemini API Key (Reserva 2)</label><input type="password" id="gemini-key-3" class="mt-1 block w-full px-3 py-2 rounded-lg form-input"></div></div><button id="save-settings" class="w-full justify-center py-3 px-4 rounded-lg font-semibold primary-btn">Salvar Configurações</button><div id="settings-feedback" class="mt-2 text-sm"></div></div>` },
@@ -590,12 +734,66 @@
     let scenePromptResults = {
         data: [],
         currentPage: 1,
-        scenesPerPage: 10
+        scenesPerPage: 10,
+        allPromptsText: ''
+    };
+    
+    let thumbnailPromptResults = {
+        data: [],
+        allPromptsText: ''
+    };
+    
+    // --- Script History Management ---
+    const saveScriptToHistory = (scriptData) => {
+        const topic = document.getElementById('script-topic').value.trim() || 'Roteiro Sem Título';
+        let history = JSON.parse(localStorage.getItem('scriptHistory') || '[]');
+        const newEntry = {
+            id: Date.now(),
+            title: topic,
+            date: new Date().toLocaleString('pt-BR'),
+            data: scriptData
+        };
+        history.unshift(newEntry);
+        if (history.length > 5) {
+            history = history.slice(0, 5);
+        }
+        localStorage.setItem('scriptHistory', JSON.stringify(history));
+    };
+
+    const renderScriptHistory = () => {
+        const container = document.getElementById('script-history-container');
+        if (!container) return;
+        const history = JSON.parse(localStorage.getItem('scriptHistory') || '[]');
+
+        if (history.length === 0) {
+            container.innerHTML = '';
+            return;
+        }
+
+        const historyItemsHtml = history.map(item => `
+            <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg border">
+                <div>
+                    <p class="font-semibold text-gray-800">${item.title}</p>
+                    <p class="text-xs text-gray-500">Salvo em: ${item.date}</p>
+                </div>
+                <button class="download-history-btn text-sm bg-blue-500 hover:bg-blue-600 text-white font-medium py-1 px-3 rounded-lg" data-script-id="${item.id}">Baixar</button>
+            </div>
+        `).join('');
+
+        container.innerHTML = `
+            <div class="card p-4">
+                <div class="flex justify-between items-center mb-3">
+                    <h3 class="text-lg font-semibold text-gray-800">Histórico de Roteiros</h3>
+                    <button id="clear-history-btn" class="text-xs font-medium text-red-600 hover:underline">Limpar Histórico</button>
+                </div>
+                <div class="space-y-2">${historyItemsHtml}</div>
+            </div>`;
     };
 
     function renderScriptPage() {
         const output = document.getElementById('output');
         const controlsContainer = document.getElementById('script-pagination-controls');
+        
         output.innerHTML = '';
         if (controlsContainer) controlsContainer.innerHTML = '';
 
@@ -610,7 +808,11 @@
         const totalPages = Math.ceil(parts.length / partsPerPage);
 
         let scoreCardsHtml = `<div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">${renderScoreCard('Potencial de Retenção', fullResult.scores.retention_potential, { 'Engajamento': fullResult.scores.retention_potential })}${renderScoreCard('Clareza da Mensagem', fullResult.scores.clarity_score, { 'Compreensão': fullResult.scores.clarity_score })}${renderScoreCard('Potencial Viral', fullResult.scores.viral_potential, { 'Compartilhamento': fullResult.scores.viral_potential })}</div>`;
-        let actionButtonsHtml = `<div class="card p-4 mb-4 flex gap-4"><button id="copy-script-btn" class="flex-1 text-center py-2 px-4 rounded-lg font-semibold bg-gray-200 hover:bg-gray-300 text-gray-800">Copiar Roteiro Completo</button></div>`;
+        let actionButtonsHtml = `<div class="card p-4 mb-4 flex flex-wrap gap-4">
+            <button id="copy-script-btn" class="flex-1 text-center py-2 px-4 rounded-lg font-semibold bg-blue-100 text-blue-800 hover:bg-blue-200">Copiar Roteiro</button>
+            <button id="save-script-txt-btn" class="flex-1 text-center py-2 px-4 rounded-lg font-semibold bg-green-100 text-green-800 hover:bg-green-200">Salvar em .txt</button>
+            <button id="clear-script-output-btn" class="flex-1 text-center py-2 px-4 rounded-lg font-semibold bg-gray-200 hover:bg-gray-300 text-gray-800">Limpar Resultado</button>
+        </div>`;
 
         const startIndex = (currentPage - 1) * partsPerPage;
         const endIndex = startIndex + partsPerPage;
@@ -664,7 +866,7 @@
         const endIndex = startIndex + scenesPerPage;
         const paginatedItems = data.slice(startIndex, endIndex);
 
-        const allPromptsText = data.map(p => p.prompt_text).join('\n\n');
+        scenePromptResults.allPromptsText = data.map((p, i) => `--- PROMPT CENA ${i+1} ---\n${p.prompt_text}`).join('\n\n');
 
         const scenesHtml = paginatedItems.map((item, index) => `
             <div class="prompt-card card p-4 border-l-4 border-gray-200 transition-colors">
@@ -681,23 +883,12 @@
             </div>`).join('');
         
         const headerHtml = `
-            <div class="card p-4 mb-4">
-                <button id="copy-all-scene-prompts" class="w-full text-center py-2 px-4 rounded-lg font-semibold bg-gray-200 hover:bg-gray-300 text-gray-800">Copiar Todos os ${data.length} Prompts</button>
+            <div class="card p-4 mb-4 flex flex-wrap gap-4">
+                <button id="copy-all-scene-prompts" class="flex-1 text-center py-2 px-4 rounded-lg font-semibold bg-blue-100 text-blue-800 hover:bg-blue-200">Copiar Todos os ${data.length} Prompts</button>
+                <button id="download-scene-prompts" class="flex-1 text-center py-2 px-4 rounded-lg font-semibold bg-green-100 text-green-800 hover:bg-green-200">Baixar Prompts (.txt)</button>
             </div>`;
 
         output.innerHTML = headerHtml + scenesHtml;
-
-        document.getElementById('copy-all-scene-prompts').addEventListener('click', (e) => {
-            const btn = e.currentTarget;
-            navigator.clipboard.writeText(allPromptsText).then(() => {
-                btn.textContent = 'Copiado!';
-                btn.classList.add('copied');
-                setTimeout(() => { 
-                    btn.textContent = `Copiar Todos os ${data.length} Prompts`; 
-                    btn.classList.remove('copied');
-                }, 2000);
-            });
-        });
 
         const totalPages = Math.ceil(data.length / scenesPerPage);
         if (totalPages > 1 && controlsContainer) {
@@ -727,6 +918,9 @@
             const trendsTerm = document.getElementById('script-trends-term').value.trim();
             const duration = document.getElementById('script-duration').value;
             const narrationOnly = document.getElementById('script-narration').checked;
+            const includeAffiliate = document.getElementById('include-affiliate-product').checked;
+            const affiliateProduct = document.getElementById('affiliate-product-description').value.trim();
+            const tone = document.getElementById('script-tone').value;
             const lang = document.getElementById('script-lang').value;
             const ctaPositions = Array.from(document.querySelectorAll('[id^="cta-"]:checked')).map(cb => cb.id.replace('cta-', ''));
 
@@ -734,51 +928,118 @@
                 alert("Por favor, preencha todos os campos obrigatórios.");
                 return;
             }
+            
+            if (includeAffiliate && !affiliateProduct) {
+                alert("Por favor, descreva o produto de afiliação que deseja incluir.");
+                return;
+            }
 
             const parts = document.getElementById('script-parts').value;
-            const trendsLine = trendsTerm ? `- Termo de Pesquisa (Google Trends): ${trendsTerm} (use este termo para guiar o conteúdo e torná-lo relevante para as pesquisas atuais)\n` : '';
+            const trendsLine = trendsTerm ? `- Termo de Pesquisa (Google Trends): ${trendsTerm}\n` : '';
+            const affiliateInstruction = includeAffiliate ? `
+                INSTRUÇÃO ADICIONAL (ALTA PRIORIDADE):
+                - Integre de forma NATURAL e PERSUASIVA uma menção ao seguinte produto de afiliação no roteiro: "${affiliateProduct}".
+            ` : '';
 
-            let prompt = `Como um roteirista MESTRE, especialista em engenharia reversa de vídeos virais para o YouTube e neurociência do engajamento, sua missão é criar um roteiro EXCEPCIONALMENTE MAGNÉTICO no idioma "${lang}".
+            // This new prompt structure avoids asking for a single large JSON, which was causing errors.
+            // It asks for structured text that we can parse reliably on the client-side.
+            let prompt = `
+                Você é o DARKSCRIPT, um roteirista de elite para o YouTube. Sua única missão é gerar um roteiro completo, detalhado e perfeitamente estruturado com base nas especificações exatas fornecidas. Falhar em seguir as regras de estrutura é inaceitável.
 
-                INFORMAÇÕES BASE:
-                - Nicho do Canal: ${niche}
-                - Público-Alvo: ${audience} (Descreva seus medos, desejos e curiosidades)
-                - Tema do Vídeo: ${topic}
-                ${trendsLine}- Duração Alvo: ${duration} minutos
+                **ESPECIFICAÇÕES DO ROTEIRO:**
+                - TEMA CENTRAL: ${topic}
+                - NICHO: ${niche}
+                - PÚBLICO: ${audience}
+                - TOM NARRATIVO: ${tone}
+                - IDIOMA: ${lang}
+                ${trendsLine ? `- TERMO EM ALTA: ${trendsTerm}\n` : ''}- DURAÇÃO ESTIMADA: ${duration} minutos
 
-                REGRAS ESTRUTURAIS CRÍTICAS (NÃO NEGLIGENCIAR):
-                1.  **Estrutura de Partes:** O roteiro será dividido em ${parts} partes. CADA parte deve conter EXATAMENTE 5 parágrafos.
-                2.  **Contagem de Palavras:** Cada parte deve ter um total de **360 palavras**. Mantenha a contagem de palavras consistente para todas as partes, exceto a última, que pode ser mais curta.
-                3.  **Técnica de Narração:** ${narrationOnly ? "O texto deve ser 100% narração pura, pronta para voice-over, sem nenhuma indicação de personagem ou diálogo." : "O roteiro deve incluir narração e descrições visuais concisas."}
-                4.  **CTAs Estratégicos:** Inclua Chamadas para Ação (CTAs) de forma orgânica e persuasiva nas seguintes seções: ${ctaPositions.length > 0 ? ctaPositions.join(', ') : 'meio'}.
+                **GATILHOS PSICOLÓGICOS AVANÇADOS PARA ALTA RETENÇÃO (OBRIGATÓRIO):**
+                - **Hook Inicial Forte:** Comece com uma promessa ousada, uma pergunta provocativa ou uma declaração que quebre um padrão para gerar CURIOSIDADE IMEDIATA.
+                - **Loops de Curiosidade Abertos:** A cada parte, introduza um novo mistério ou uma pergunta que só será respondida mais à frente, forçando o espectador a continuar assistindo.
+                - **Picos de Tensão e Alívio:** Alterne entre momentos de alta energia/tensão e momentos mais calmos para criar uma montanha-russa emocional que prenda a atenção.
+                - **Storytelling Magnético:** Use uma narrativa clara com começo, meio (com conflito crescente) e fim (com uma resolução satisfatória ou um gancho para o próximo vídeo).
 
-                GATILHOS PSICOLÓGICOS A SEREM EMBUTIDOS:
-                -   **Hook Inicial (Primeiros 15 segundos):** Comece com uma pergunta chocante, uma afirmação contraintuitiva ou uma promessa de revelação que gere CURIOSIDADE extrema.
-                -   **Loops Abertos:** Constantemente introduza mistérios ou perguntas que só serão respondidas mais tarde no vídeo para manter a TENSÃO.
-                -   **Prova Social e Autoridade:** Incorpore dados, citações ou referências que validem a informação.
-                -   **Conexão Emocional:** Use storytelling para criar empatia e conectar-se com as emoções do público-alvo.
-                -   **Antecipação:** Crie expectativa para a conclusão ou para a "grande revelação" no final.
+                **REGRAS ABSOLUTAS E INQUEBRÁVEIS:**
 
-                REGRAS DE SAÍDA (FORMATO JSON OBRIGATÓRIO):
-                1.  Avalie o roteiro final e forneça 3 pontuações (0-100) com base em seu potencial: 'Potencial de Retenção', 'Clareza da Mensagem' e 'Potencial Viral'.
-                2.  Crie um campo 'full_script_text' com o roteiro completo, concatenado, para cópia fácil.
-                3.  Estruture a saída no campo 'script_parts' como um array de objetos, onde cada objeto representa uma parte e contém 'part_number', 'part_title' e 'part_content'.
+                1.  **REGRA DE COMPLETUDE (PRIORIDADE MÁXIMA):** Você DEVE gerar o conteúdo completo para TODAS as ${parts} partes solicitadas. É proibido parar no meio.
+
+                2.  **REGRA DE DENSIDADE DE CONTEÚDO (PRIORIDADE MÁXIMA):** Cada parte individual DEVE ter aproximadamente **2500 CARACTERES** (cerca de 400 palavras). Roteiros com partes curtas (menos de 2000 caracteres) são considerados falhas. Seja profundo, detalhado e explore o tópico para atingir essa meta em CADA parte.
+
+                3.  **REGRA DE ESTRUTURA DE PARÁGRAFOS:** O conteúdo denso de cada parte (~2500 caracteres) DEVE ser dividido em exatamente **5 parágrafos** coesos e bem escritos.
+
+                4.  **REGRA DE NÚMERO DE PARTES:** O roteiro final DEVE conter exatamente ${parts} partes. Nem mais, nem menos.
+
+                5.  **NARRAÇÃO E CTAS:**
+                    -   Estilo: ${narrationOnly ? "100% narração pura para voice-over." : "Narração com descrições visuais concisas."}
+                    -   CTAs: Inclua chamadas para ação organicamente nas seguintes seções: ${ctaPositions.length > 0 ? ctaPositions.join(', ') : 'meio'}.
+                    ${affiliateInstruction}
+
+                **INSTRUÇÕES DE SAÍDA (FORMATO DE TEXTO ESTRUTURADO OBRIGATÓRIO):**
+                - Na PRIMEIRA linha, e SOMENTE na primeira linha, coloque as pontuações no seguinte formato JSON:
+                SCORES:{"retention_potential": <score>, "clarity_score": <score>, "viral_potential": <score>}
+                - A partir da segunda linha, inicie o roteiro.
+                - Use o seguinte marcador para separar CADA parte do roteiro:
+                [--PART <número>: <título da parte>--]
+                <conteúdo da parte com 5 parágrafos e ~2500 caracteres>
+                [--ENDPART--]
+                
+                Exemplo de formato de saída:
+                SCORES:{"retention_potential": 90, "clarity_score": 95, "viral_potential": 88}
+                [--PART 1: A Introdução Chocante--]
+                Texto do parágrafo 1...
+                Texto do parágrafo 2...
+                Texto do parágrafo 3...
+                Texto do parágrafo 4...
+                Texto do parágrafo 5...
+                [--ENDPART--]
+                [--PART 2: O Ponto de Virada--]
+                Texto do parágrafo 1...
+                ...
+                [--ENDPART--]
             `;
             
-            const schema = {
-                type: "OBJECT", properties: {
-                    scores: { type: "OBJECT", properties: { retention_potential: { type: "NUMBER" }, clarity_score: { type: "NUMBER" }, viral_potential: { type: "NUMBER" } } },
-                    full_script_text: { type: "STRING" },
-                    script_parts: { type: "ARRAY", items: { type: "OBJECT", properties: { part_number: { type: "NUMBER" }, part_title: { type: "STRING" }, part_content: { type: "STRING" } } } }
-                }
-            };
-            
-            const result = await callAIModel(prompt, schema);
-            scriptResults.fullResult = result;
-            scriptResults.currentPage = 1;
+            // We ask for TEXT now, not JSON, to avoid formatting errors from the AI.
+            const resultText = (await callAIModel(prompt, null)).text;
 
-            document.getElementById('legend-container').innerHTML = getLegendForTool('script-writer');
-            renderScriptPage();
+            try {
+                // Now, we parse the structured text safely in Javascript
+                const lines = resultText.split('\n');
+                const scoresLine = lines.find(line => line.startsWith('SCORES:'));
+                const scores = scoresLine ? JSON.parse(scoresLine.replace('SCORES:', '').trim()) : { retention_potential: 75, clarity_score: 75, viral_potential: 75 };
+                
+                const scriptContent = lines.slice(scoresLine ? 1 : 0).join('\n');
+                const partsRaw = scriptContent.split('[--ENDPART--]').filter(p => p.trim());
+                
+                const script_parts = partsRaw.map((partRaw, index) => {
+                    const match = partRaw.match(/\[--PART (\d+): (.*?)--\]/);
+                    const part_number = match ? parseInt(match[1], 10) : index + 1;
+                    const part_title = match ? match[2].trim() : `Parte ${index + 1}`;
+                    const part_content = partRaw.replace(/\[--PART \d+: .*?--\]/, '').trim();
+                    return { part_number, part_title, part_content };
+                });
+
+                if (script_parts.length === 0) throw new Error("A IA não retornou um roteiro válido.");
+
+                const full_script_text = narrationOnly 
+                    ? script_parts.map(part => part.part_content).join('\n\n')
+                    : script_parts.map(part => `--- ${part.part_number}. ${part.part_title} ---\n\n${part.part_content}`).join('\n\n\n');
+
+                const finalResult = { scores, script_parts, full_script_text };
+
+                scriptResults.fullResult = finalResult;
+                scriptResults.currentPage = 1;
+
+                saveScriptToHistory(finalResult);
+                renderScriptHistory();
+                document.getElementById('legend-container').innerHTML = getLegendForTool('script-writer');
+                renderScriptPage();
+                showSuccessToast("Roteiro gerado com sucesso!");
+
+            } catch (error) {
+                console.error("Erro ao processar a resposta da IA:", error);
+                addToLog("A resposta da IA não veio no formato esperado. Tente novamente.", true);
+            }
         },
         'generate-viral-content': async (output, append = false) => {
             const topic = document.getElementById('viral-topic').value.trim();
@@ -793,7 +1054,7 @@
             let prompt, schema, renderer;
 
             if (type === 'titles') {
-                prompt = `Aja como um copywriter de YouTube de elite. Crie 3 títulos virais e inéditos em "${lang}" sobre "${topic}". REGRAS: 1. **Combine 2 a 3 modelos de títulos diferentes** (ex: "Lista" + "Aviso") para criar cada título. 2. Responda APENAS com o JSON. Para cada título, forneça: 'title', 'category' (os modelos combinados, ex: "Lista + Aviso"), 'suggestion' (1 frase em português explicando a psicologia), e 'scores' (um objeto com 'impacto', 'clareza', 'curiosidade' de 0 a 100).`;
+                prompt = `Aja como um copywriter de YouTube de elite. Crie 4 títulos virais e inéditos em "${lang}" sobre "${topic}". REGRAS: 1. **Combine de 2 a 4 modelos de títulos diferentes** (ex: "Lista" + "Aviso" + "Como Fazer") para criar cada título. 2. O título final NÃO PODE exceder 100 caracteres. 3. Responda APENAS com o JSON. Para cada título, forneça: 'title', 'category' (os modelos combinados), 'suggestion' (1 frase em português explicando a psicologia), e 'scores' (um objeto com 'impacto', 'clareza', 'curiosidade' de 0 a 100).`;
                 schema = {
                     type: "ARRAY",
                     items: {
@@ -835,7 +1096,7 @@
                     </div>`;
                 }).join('');
             } else { // structures
-                prompt = `Aja como um copywriter de YouTube de elite. Crie 3 ESTRUTURAS de título inéditas em "${lang}" para "${topic}". REGRAS: 1. **Combine 2 a 3 modelos de títulos diferentes** para criar cada estrutura. 2. Use placeholders como [DOR], [NÚMERO], [BENEFÍCIO]. 3. Responda APENAS com o JSON. Para cada estrutura, forneça: 'structure' (o modelo), 'category' (os modelos combinados), e 'explanation' (1 frase em português de como usar).`;
+                prompt = `Aja como um copywriter de YouTube de elite. Crie 4 ESTRUTURAS de título inéditas e criativas em "${lang}" para vídeos sobre "${topic}". REGRAS: 1. **Combine de 2 a 4 modelos de títulos diferentes** para criar cada estrutura. 2. A estrutura final NÃO PODE exceder 100 caracteres. 3. Use placeholders como [DOR], [NÚMERO], [BENEFÍCIO]. 4. Responda APENAS com o JSON. Para cada estrutura, forneça: 'structure' (o modelo), 'category' (os modelos combinados), e 'explanation' (1 frase em português de como usar).`;
                 schema = {
                     type: "ARRAY",
                     items: {
@@ -879,6 +1140,7 @@
                 output.innerHTML = html;
             }
             document.getElementById('generate-more-viral-content').style.display = 'block';
+            showSuccessToast("Conteúdo gerado!");
         },
         'generate-scene-prompts': async(output) => {
             const text = document.getElementById('scene-text').value.trim();
@@ -888,6 +1150,16 @@
 
             if (!text) { alert("Por favor, cole um roteiro."); return; }
             
+            const platformConfigs = {
+                'Midjourney': 'Foque em composição cinematográfica, use parâmetros como --ar 16:9, --style raw, e descreva a iluminação (ex: volumetric lighting, cinematic lighting). Crie prompts concisos e diretos.',
+                'Leonardo.AI': 'Use palavras-chave como "photorealistic, cinematic, hyper-detailed, 8k, masterpiece". Descreva a emoção, a paleta de cores e o estilo artístico (ex: "in the style of Greg Rutkowski").',
+                'DALL-E 3': 'Seja conversacional e extremamente descritivo. "Crie uma imagem fotorrealista de um detetive em um escritório escuro, iluminado apenas pela luz de uma janela com persianas, fumaça de cigarro no ar, em um estilo noir clássico."',
+                'Wisk': 'Prompts devem ser claros, focados em objetos e ações. Use termos como "Fotografia de...", "Ilustração vetorial de...".',
+                'Nano Banana': 'Ideal para estilos mais artísticos e surreais. Use linguagem poética e descrições abstratas. Ex: "um relógio derretendo sobre uma paisagem desértica, com nuvens em formato de borboletas".',
+                'Flux': 'Focado em alta qualidade e realismo. Use descrições detalhadas de texturas, materiais e iluminação. "Close-up extremo de uma gota de chuva em uma pétala de rosa vermelha, com reflexos macro, ultra-realista".',
+                'Freepik': 'Use termos comerciais e diretos, focados em conceitos. "Homem de negócios sorrindo e apertando a mão de um robô em um escritório moderno, simbolizando parceria entre humano e IA, fundo branco, estilo de foto de banco de imagem."'
+            };
+
             let chunks = [];
             const words = text.split(/\s+/).filter(Boolean);
 
@@ -902,9 +1174,9 @@
 
             let prompt;
             if (mode === 'auto') {
-                 prompt = `Como um diretor de arte, analise o roteiro a seguir e gere prompts de imagem em INGLÊS para a IA '${platform}'. Identifique os momentos-chave e crie 2 prompts cinematográficos para cada cena importante. Para cada prompt, retorne também o trecho EXATO do roteiro original que o inspirou no campo 'original_text'.\n\nROTEIRO:\n${chunks[0]}`;
+                 prompt = `Como um diretor de arte, analise o roteiro a seguir e gere prompts de imagem em INGLÊS otimizados para a IA '${platform}'. Siga esta diretriz de estilo: "${platformConfigs[platform]}". Identifique os momentos-chave e crie 2 prompts cinematográficos para cada cena importante. Para cada prompt, retorne também o trecho EXATO do roteiro original que o inspirou no campo 'original_text'.\n\nROTEIRO:\n${chunks[0]}`;
             } else {
-                 prompt = `Como um diretor de arte, sua tarefa é processar os seguintes trechos de um roteiro. Para CADA trecho fornecido, gere EXATAMENTE 1 prompt de imagem cinematográfico em INGLÊS para a IA '${platform}'. O número de prompts gerados deve ser idêntico ao número de trechos de texto (${chunks.length}). Não combine nem omita nenhum trecho. Para cada prompt, retorne também o trecho EXATO do roteiro original que o inspirou no campo 'original_text'.\n\nTRECHOS DO ROTEIRO:\n${JSON.stringify(chunks)}`;
+                 prompt = `Como um diretor de arte, sua tarefa é processar os seguintes trechos de um roteiro. Para CADA trecho fornecido, gere EXATAMENTE 1 prompt de imagem cinematográfico em INGLÊS otimizado para a IA '${platform}'. Siga esta diretriz de estilo: "${platformConfigs[platform]}". O número de prompts gerados deve ser idêntico ao número de trechos de texto (${chunks.length}). Não combine nem omita nenhum trecho. Para cada prompt, retorne também o trecho EXATO do roteiro original que o inspirou no campo 'original_text'.\n\nTRECHOS DO ROTEIRO:\n${JSON.stringify(chunks)}`;
             }
 
             const schema = { type: "ARRAY", items: { type: "OBJECT", properties: { scene_description: {type: "STRING"}, prompt_text: { type: "STRING" }, original_text: {type: "STRING"}} } };
@@ -914,6 +1186,7 @@
             scenePromptResults.currentPage = 1;
             
             renderScenePage();
+            showSuccessToast("Prompts de cena gerados!");
         },
         'generate-prompts': async (output, append = false) => {
             const title = document.getElementById('thumb-title').value.trim();
@@ -921,20 +1194,31 @@
             if (!title) { alert("Por favor, insira um título."); return; }
 
             const platformConfigs = {
-                'Midjourney': 'Foque em composição cinematográfica, use parâmetros como --ar 16:9, --style raw, e descreva a iluminação (ex: volumetric lighting).',
-                'Leonardo.AI': 'Use palavras-chave como "photorealistic, cinematic, hyper-detailed, 8k". Descreva a emoção e a paleta de cores.',
-                'DALL-E 3': 'Seja conversacional e extremamente descritivo. "Crie uma imagem fotorrealista de..."',
-                'Freepik': 'Use termos comerciais e diretos. "Homem surpreso apontando para um gráfico, fundo de escritório, estilo de foto de banco de imagem."'
+                'Midjourney': 'Foque em composição cinematográfica, use parâmetros como --ar 16:9, --style raw, e descreva a iluminação (ex: volumetric lighting, cinematic lighting). Crie prompts concisos e diretos.',
+                'Leonardo.AI': 'Use palavras-chave como "photorealistic, cinematic, hyper-detailed, 8k, masterpiece". Descreva a emoção, a paleta de cores e o estilo artístico (ex: "in the style of Greg Rutkowski").',
+                'DALL-E 3': 'Seja conversacional e extremamente descritivo. "Crie uma imagem fotorrealista de um detetive em um escritório escuro, iluminado apenas pela luz de uma janela com persianas, fumaça de cigarro no ar, em um estilo noir clássico."',
+                'Wisk': 'Prompts devem ser claros, focados em objetos e ações. Use termos como "Fotografia de...", "Ilustração vetorial de...".',
+                'Nano Banana': 'Ideal para estilos mais artísticos e surreais. Use linguagem poética e descrições abstratas. Ex: "um relógio derretendo sobre uma paisagem desértica, com nuvens em formato de borboletas".',
+                'Flux': 'Focado em alta qualidade e realismo. Use descrições detalhadas de texturas, materiais e iluminação. "Close-up extremo de uma gota de chuva em uma pétala de rosa vermelha, com reflexos macro, ultra-realista".',
+                'Freepik': 'Use termos comerciais e diretos, focados em conceitos. "Homem de negócios sorrindo e apertando a mão de um robô em um escritório moderno, simbolizando parceria entre humano e IA, fundo branco, estilo de foto de banco de imagem."'
             };
 
-            const prompt = `Gere 2 prompts AVANÇADOS em INGLÊS para a IA '${platform}' para uma thumbnail sobre "${title}". Siga esta diretriz: ${platformConfigs[platform]}. Para cada prompt, forneça:
+            const prompt = `Gere 2 prompts AVANÇADOS em INGLÊS para a IA '${platform}' para uma thumbnail sobre "${title}". Siga esta diretriz de estilo para otimizar o prompt: "${platformConfigs[platform]}". Para cada prompt, forneça:
             1.  'score': uma pontuação de potencial de CTR (0-100).
-            2.  'suggestion': uma "virada de chave" (melhoria principal) em PORTUGÊS, BEM CURTA, com no máximo 5 linhas.`;
+            2.  'suggestion': uma "virada de chave" (melhoria principal) em PORTUGUÊS, BEM CURTA, com no máximo 5 linhas.`;
             
             const schema = { type: "ARRAY", items: { type: "OBJECT", properties: { prompt: { type: "STRING" }, score: { type: "NUMBER" }, suggestion: { type: "STRING" } } } };
             
             const result = await callAIModel(prompt, schema);
             
+            if (append) {
+                thumbnailPromptResults.data.push(...result);
+            } else {
+                thumbnailPromptResults.data = result;
+            }
+
+            thumbnailPromptResults.allPromptsText = thumbnailPromptResults.data.map((p, i) => `--- PROMPT THUMBNAIL ${i+1} ---\n${p.prompt}`).join('\n\n');
+
             let html = result.map(item => `<div class="card p-4 flex flex-col md:flex-row gap-4 items-start"><div class="flex-1"><div class="flex justify-between items-start"><p class="font-mono text-sm bg-gray-100 p-2 rounded flex-1">${item.prompt}</p>${createCopyButton(item.prompt, 'ml-2 p-1 rounded-md text-gray-600 bg-gray-200 hover:bg-gray-300')}</div></div><div class="w-full md:w-56 flex-shrink-0">${renderScoreCard('Potencial de CTR', item.score, { 'Impacto Visual': item.score, 'Clareza': item.score > 10 ? item.score - 5 : item.score }, item.suggestion)}</div></div>`).join('');
             
             if (append) {
@@ -943,7 +1227,14 @@
                 document.getElementById('legend-container').innerHTML = getLegendForTool('thumbnail-prompts');
                 output.innerHTML = html;
             }
+            
+            document.getElementById('thumb-actions').innerHTML = `
+                <button id="download-thumb-prompts" class="w-full text-center py-2 px-4 rounded-lg font-semibold bg-green-100 text-green-800 hover:bg-green-200">
+                    Baixar ${thumbnailPromptResults.data.length} Prompts (.txt)
+                </button>`;
             document.getElementById('generate-more-prompts').style.display = 'block';
+            if(!append) showSuccessToast("Prompts de thumbnail gerados!");
+
         },
         'convert-to-srt': (output) => {
             const text = document.getElementById('srt-input-text').value;
@@ -1022,21 +1313,14 @@
             
             document.getElementById('download-srt-btn').addEventListener('click', () => {
                 const srtFinalContent = document.getElementById('srt-result-content').textContent;
-                const blob = new Blob([srtFinalContent], { type: 'text/plain' });
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = 'legendas.srt';
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-                URL.revokeObjectURL(url);
+                downloadAsTxt(srtFinalContent, 'legendas.srt');
             });
 
             document.getElementById('clear-srt-btn').addEventListener('click', () => {
                 document.getElementById('srt-input-text').value = '';
                 output.innerHTML = '';
             });
+             showSuccessToast("Arquivo .SRT convertido!");
         },
         'split-text-btn': () => {
             const text = document.getElementById('text-divider-input').value.trim();
@@ -1057,6 +1341,7 @@
                 }
             }
             outputEl.innerHTML = parts.map((part, index) => `<div class="card p-4 relative"><div class="flex justify-between items-center mb-2"><h4 class="font-semibold">Parte ${index + 1}</h4>${createCopyButton(part, 'p-1 rounded-md text-gray-600 bg-gray-200 hover:bg-gray-300')}</div><p class="text-gray-700 bg-gray-50 p-2 rounded border">${part}</p></div>`).join('');
+            showSuccessToast("Texto dividido com sucesso!");
         }
     };
     
@@ -1082,6 +1367,10 @@
                     partsInput.value = '';
                 }
             });
+            document.getElementById('include-affiliate-product').addEventListener('change', (e) => {
+                document.getElementById('affiliate-product-container').style.display = e.target.checked ? 'block' : 'none';
+            });
+            renderScriptHistory(); // Render history on tab load
         }
         if (tabId === 'scene-prompts'){
            initializeScenePrompts();
@@ -1095,6 +1384,9 @@
                 });
             }
         }
+        
+        thumbnailPromptResults.data = []; // Reset thumbnail prompts on tab change
+        thumbnailPromptResults.allPromptsText = '';
 
         const outputEl = document.getElementById('output');
         Object.keys(handlers).forEach(buttonId => {
@@ -1185,13 +1477,12 @@
             };
             try {
                 await apiRequest('/api/settings', 'POST', { settings: settingsToSave });
-                feedbackEl.textContent = 'Configurações salvas com sucesso!';
-                feedbackEl.className = 'text-green-600';
+                showSuccessToast('Configurações salvas!');
             } catch(e) {
                 feedbackEl.textContent = 'Erro ao salvar no servidor.';
                 feedbackEl.className = 'text-red-600';
+                 setTimeout(() => feedbackEl.textContent = '', 3000);
             }
-            setTimeout(() => feedbackEl.textContent = '', 3000);
         });
     }
     
@@ -1291,17 +1582,17 @@
                     const is_on = document.getElementById('maintenance-toggle').checked;
                     const message = document.getElementById('maintenance-message-input').value;
                     await apiRequest('/api/admin/maintenance', 'POST', { is_on, message });
-                    addToLog('Modo de manutenção salvo.');
+                    showSuccessToast('Modo de manutenção salvo.');
                 }
                 if (e.target.id === 'send-announcement') {
                     const message = document.getElementById('announcement-message-input').value;
                     await apiRequest('/api/admin/announcement', 'POST', { message });
-                    addToLog('Anúncio enviado.');
+                    showSuccessToast('Anúncio enviado.');
                 }
                 if(e.target.id === 'clear-announcement') {
                     document.getElementById('announcement-message-input').value = '';
                     await apiRequest('/api/admin/announcement', 'POST', { message: '' });
-                    addToLog('Anúncio limpo.');
+                    showSuccessToast('Anúncio limpo.');
                 }
             });
 
@@ -1473,32 +1764,55 @@
         if (copyBtn) {
             const textToCopy = decodeURIComponent(copyBtn.dataset.copyText);
             navigator.clipboard.writeText(textToCopy).then(() => {
-                const originalContent = copyBtn.innerHTML;
-                copyBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" /></svg>`;
-                copyBtn.classList.add('copied');
-                
-                const promptCard = copyBtn.closest('.prompt-card');
-                if (promptCard) {
-                    promptCard.classList.add('copied');
-                }
-
-                setTimeout(() => { 
-                    copyBtn.innerHTML = originalContent; 
-                    copyBtn.classList.remove('copied');
-                    if (promptCard) promptCard.classList.remove('copied');
-                }, 2000);
+                showSuccessToast("Copiado para a área de transferência!");
             });
         }
         
+        // Script Writer Action Buttons
         if (e.target.id === 'copy-script-btn' && scriptResults.fullResult) {
             navigator.clipboard.writeText(scriptResults.fullResult.full_script_text).then(() => {
-                e.target.textContent = 'Roteiro Copiado!';
-                e.target.classList.add('copied')
-                setTimeout(() => { 
-                    e.target.textContent = 'Copiar Roteiro Completo';
-                    e.target.classList.remove('copied')
-                 }, 2000);
+                showSuccessToast("Roteiro copiado!");
             });
+        }
+        if (e.target.id === 'save-script-txt-btn' && scriptResults.fullResult) {
+            const topic = document.getElementById('script-topic').value.trim() || 'roteiro';
+            downloadAsTxt(scriptResults.fullResult.full_script_text, topic.replace(/[^a-z0-9]/gi, '_').toLowerCase());
+        }
+        if (e.target.id === 'clear-script-output-btn') {
+            document.getElementById('output').innerHTML = '';
+            document.getElementById('script-pagination-controls').innerHTML = '';
+            document.getElementById('script-writer-form-container').reset();
+            document.getElementById('affiliate-product-container').style.display = 'none';
+        }
+        if (e.target.id === 'clear-history-btn') {
+            showConfirmationModal('Limpar Histórico', 'Tem a certeza que deseja apagar todos os roteiros salvos?', () => {
+                localStorage.removeItem('scriptHistory');
+                renderScriptHistory();
+                showSuccessToast('Histórico de roteiros limpo.');
+            });
+        }
+        if (e.target.matches('.download-history-btn')) {
+            const scriptId = parseInt(e.target.dataset.scriptId, 10);
+            const history = JSON.parse(localStorage.getItem('scriptHistory') || '[]');
+            const scriptItem = history.find(item => item.id === scriptId);
+            if (scriptItem) {
+                downloadAsTxt(scriptItem.data.full_script_text, scriptItem.title.replace(/[^a-z0-9]/gi, '_').toLowerCase());
+            }
+        }
+
+        // Scene Prompts Action Buttons
+        if (e.target.id === 'copy-all-scene-prompts') {
+            navigator.clipboard.writeText(scenePromptResults.allPromptsText).then(() => {
+                showSuccessToast("Todos os prompts foram copiados!");
+            });
+        }
+        if (e.target.id === 'download-scene-prompts') {
+            downloadAsTxt(scenePromptResults.allPromptsText, 'prompts_de_cena');
+        }
+
+        // Thumbnail Prompts Action Buttons
+        if (e.target.id === 'download-thumb-prompts') {
+            downloadAsTxt(thumbnailPromptResults.allPromptsText, 'prompts_de_thumbnail');
         }
     });
 
@@ -1514,3 +1828,5 @@
     </script>
 </body>
 </html>
+
+
