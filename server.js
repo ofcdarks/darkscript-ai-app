@@ -18,8 +18,8 @@ const DB_PATH = process.env.DB_PATH || path.join(__dirname, 'darkscript.db');
 
 // Middlewares
 app.use(express.json());
-// CORREÇÃO: Servir arquivos estáticos a partir do diretório raiz, onde o index.html está.
-app.use(express.static(__dirname));
+// CORREÇÃO: Servir arquivos estáticos a partir do diretório 'public', como esperado por muitos ambientes de hospedagem.
+app.use(express.static(path.join(__dirname, 'public')));
 
 // 3. Conexão com o Banco de Dados SQLite
 // Usar a variável DB_PATH que definimos
@@ -565,8 +565,8 @@ app.post('/api/admin/announcement', verifyToken, requireAdmin, (req, res) => {
 
 // 8. Rota Genérica
 app.get('*', (req, res) => {
-    // CORREÇÃO: Servir o index.html a partir do diretório raiz.
-    res.sendFile(path.join(__dirname, 'index.html'));
+    // CORREÇÃO: Servir o index.html a partir do subdiretório 'public'.
+    res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
 // 9. Inicialização
@@ -583,3 +583,4 @@ process.on('SIGINT', () => {
         process.exit(0);
     });
 });
+
