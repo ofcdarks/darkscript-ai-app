@@ -507,35 +507,23 @@ app.delete('/api/admin/user/:userId', verifyToken, requireAdmin, (req, res) => {
     });
 });
 
-// MODIFICADO: Rota de estatísticas do admin agora calcula usuários online e logins recentes.
 app.get('/api/admin/stats', verifyToken, requireAdmin, (req, res) => {
-    const queries = {
-        totalUsers: "SELECT COUNT(*) as count FROM users",
-        pendingActivation: "SELECT COUNT(*) as count FROM users WHERE is_active = 0",
-        onlineNow: "SELECT COUNT(*) as count FROM users WHERE last_login_at >= datetime('now', '-15 minutes')",
-        loginsLast24h: "SELECT COUNT(*) as count FROM users WHERE last_login_at >= datetime('now', '-24 hours')"
-    };
-
-    const promises = Object.keys(queries).map(key => 
-        new Promise((resolve, reject) => {
-            db.get(queries[key], [], (err, row) => {
-                if (err) {
-                    reject(err);
-                } else {
-                    resolve({ [key]: row.count });
-                }
-            });
-        })
-    );
-
-    Promise.all(promises)
-        .then(results => {
-            const stats = results.reduce((acc, current) => ({ ...acc, ...current }), {});
-            res.json(stats);
-        })
-        .catch(err => {
-            res.status(500).json({ message: 'Erro ao buscar estatísticas.', error: err.message });
+    db.get("SELECT COUNT(*) as totalUsers FROM users", [], (err, total) => {
+        if (err) return res.status(500).json({
+            message: 'Erro interno.'
         });
+        db.get("SELECT COUNT(*) as pendingActivation FROM users WHERE is_active = 0", [], (err, pending) => {
+            if (err) return res.status(500).json({
+                message: 'Erro interno.'
+            });
+            res.json({
+                totalUsers: total.totalUsers,
+                pendingActivation: pending.pendingActivation,
+                onlineNow: 0, // Placeholder
+                loginsLast24h: 0 // Placeholder
+            });
+        });
+    });
 });
 
 app.post('/api/admin/maintenance', verifyToken, requireAdmin, (req, res) => {
@@ -595,3 +583,4 @@ process.on('SIGINT', () => {
         process.exit(0);
     });
 });
+

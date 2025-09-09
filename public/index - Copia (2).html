@@ -375,18 +375,17 @@
         logBar.style.backgroundColor = isError ? '#fee2e2' : '#dbeafe'; // red-100 or blue-100
         logBar.style.color = isError ? '#991b1b' : '#1e40af'; // red-800 or blue-800
     };
-    
-    const downloadFile = (content, filename) => {
+    const downloadAsTxt = (content, filename) => {
         const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = filename;
+        a.download = `${filename}.txt`;
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
-        showSuccessToast(`${filename} baixado!`);
+        showSuccessToast(`${filename}.txt baixado!`);
     };
 
 
@@ -578,30 +577,11 @@
         const intMainScore = Math.round(mainScore || 0);
         const subScoresHtml = Object.entries(subScores).map(([key, value]) => {
             const cappedValue = Math.min(100, Math.round(value || 0));
-            return `<div class="mb-2">
-                        <div class="flex justify-between items-center text-sm mb-1 gap-2">
-                            <span class="text-gray-600 truncate" title="${key}">${key}</span>
-                            <span class="font-semibold text-gray-700 flex-shrink-0">${cappedValue}/100</span>
-                        </div>
-                        <div class="w-full bg-gray-200 rounded-full h-1.5">
-                            <div class="h-1.5 rounded-full ${getScoreColor(cappedValue)}" style="width: ${cappedValue}%;"></div>
-                        </div>
-                    </div>`;
+            return `<div class="mb-2"><div class="flex justify-between items-center text-sm mb-1"><span class="text-gray-600">${key}</span><span class="font-semibold text-gray-700">${cappedValue}/100</span></div><div class="w-full bg-gray-200 rounded-full h-1.5"><div class="h-1.5 rounded-full ${getScoreColor(cappedValue)}" style="width: ${cappedValue}%;"></div></div></div>`;
         }).join('');
         const suggestionHtml = suggestion ? `<p class="text-xs text-gray-500 mt-3 pt-3 border-t"><strong class="text-gray-600">Virada de Chave:</strong> ${suggestion}</p>` : '';
 
-        // Adicionado 'min-w-0' ao container do card para forçar o 'truncate' a funcionar corretamente dentro de um layout de grade/flex.
-        return `<div class="card p-4 w-full flex-shrink-0 min-w-0">
-                    <h4 class="font-semibold text-gray-800 mb-2 truncate" title="${title}">${title}</h4>
-                    <div class="flex items-center justify-between mb-4">
-                        <div class="flex items-baseline gap-1">
-                            <span class="text-3xl font-bold ${getScoreTextColor(intMainScore)}">${intMainScore}</span>
-                            <span class="text-gray-500 text-sm">/ 100</span>
-                        </div>
-                    </div>
-                    ${subScoresHtml}
-                    ${suggestionHtml}
-                </div>`;
+        return `<div class="card p-4 w-full flex-shrink-0"><h4 class="font-semibold text-gray-800 mb-2">${title}</h4><div class="flex items-center justify-between mb-4"><div class="flex items-baseline gap-1"><span class="text-3xl font-bold ${getScoreTextColor(intMainScore)}">${intMainScore}</span><span class="text-gray-500 text-sm">/ 100</span></div></div>${subScoresHtml}${suggestionHtml}</div>`;
     };
 
     const getLegendForTool = (toolId) => {
@@ -631,7 +611,6 @@
         }
     }
     
-    // MODIFICADO: Adicionado seletor de fórmula de estrutura.
     const tools = {
         "script-writer": { 
             title: "Criador de Roteiro", 
@@ -653,16 +632,16 @@
                                 <input type="text" id="script-topic" class="mt-1 w-full px-4 py-3 rounded-lg form-input" placeholder="ex: O Mistério do Triângulo das Bermudas">
                             </div>
                             <div>
-                                <label for="script-trends-term" class="text-sm font-medium text-gray-700">Termo de Pesquisa (Opcional)</label>
+                                <label for="script-trends-term" class="text-sm font-medium text-gray-700">Termo de Pesquisa (Google Trends)</label>
                                 <input type="text" id="script-trends-term" class="mt-1 w-full px-4 py-3 rounded-lg form-input" placeholder="ex: inteligência artificial, true crime brasil">
                             </div>
                             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                                 <div>
-                                    <label for="script-duration" class="text-sm font-medium text-gray-700">Duração (min)</label>
+                                    <label for="script-duration" class="text-sm font-medium text-gray-700">Duração (minutos)</label>
                                     <input type="number" id="script-duration" class="mt-1 w-full px-4 py-3 rounded-lg form-input" placeholder="ex: 10">
                                 </div>
                                 <div>
-                                    <label for="script-parts" class="text-sm font-medium text-gray-700">Partes</label>
+                                    <label for="script-parts" class="text-sm font-medium text-gray-700">Número de Partes</label>
                                     <input type="number" id="script-parts" class="mt-1 w-full px-4 py-3 rounded-lg form-input bg-gray-200" placeholder="Auto" readonly>
                                 </div>
                                 <div>
@@ -686,77 +665,6 @@
                                    <option value="sério e formal">Sério e Formal</option>
                                    <option value="inspirador e motivacional">Inspirador e Motivacional</option>
                                </select>
-                            </div>
-                            <div>
-                                <label for="script-formula" class="text-sm font-medium text-gray-700">Fórmula de Estrutura</label>
-                                <select id="script-formula" class="mt-1 w-full px-4 py-3 rounded-lg form-input">
-                                    <option value="" selected disabled>-- Selecione uma categoria --</option>
-                                    <optgroup label="🎓 EDUCAÇÃO & TUTORIAL">
-                                        <option value="master">Fórmula MASTER (Skill Learning)</option>
-                                        <option value="teach">Fórmula TEACH (Conceitos Complexos)</option>
-                                    </optgroup>
-                                    <optgroup label="💰 NEGÓCIOS & EMPREENDEDORISMO">
-                                        <option value="profit">Fórmula PROFIT (Estratégias de Negócio)</option>
-                                        <option value="scale">Fórmula SCALE (Growth & Scaling)</option>
-                                        <option value="success">Fórmula SUCCESS (Mindset Empresarial)</option>
-                                    </optgroup>
-                                    <optgroup label="🎯 MARKETING & VENDAS">
-                                        <option value="convert">Fórmula CONVERT (Persuasão/Vendas)</option>
-                                        <option value="viral">Fórmula VIRAL (Content Marketing)</option>
-                                        <option value="brand">Fórmula BRAND (Personal Branding)</option>
-                                    </optgroup>
-                                     <optgroup label="💪 FITNESS & SAÚDE">
-                                        <option value="fit">Fórmula FIT (Exercícios/Treino)</option>
-                                        <option value="transform">Fórmula TRANSFORM (Transformação Física)</option>
-                                        <option value="heal">Fórmula HEAL (Saúde/Wellness)</option>
-                                    </optgroup>
-                                    <optgroup label="🎮 ENTRETENIMENTO & GAMING">
-                                        <option value="epic">Fórmula EPIC (Gaming Content)</option>
-                                        <option value="story">Fórmula STORY (Narrative Content)</option>
-                                        <option value="react">Fórmula REACT (Reaction Content)</option>
-                                    </optgroup>
-                                    <optgroup label="🍳 CULINÁRIA & LIFESTYLE">
-                                        <option value="cook">Fórmula COOK (Receitas/Culinária)</option>
-                                        <option value="taste">Fórmula TASTE (Food Reviews)</option>
-                                        <option value="home">Fórmula HOME (Decoração/Organização)</option>
-                                    </optgroup>
-                                    <optgroup label="🎨 ARTE & CRIATIVIDADE">
-                                        <option value="create">Fórmula CREATE (Processo Criativo)</option>
-                                        <option value="inspire">Fórmula INSPIRE (Arte/Design)</option>
-                                        <option value="craft">Fórmula CRAFT (DIY/Artesanato)</option>
-                                    </optgroup>
-                                    <optgroup label="🔬 CIÊNCIA & TECNOLOGIA">
-                                        <option value="discover">Fórmula DISCOVER (Ciência/Pesquisa)</option>
-                                        <option value="tech">Fórmula TECH (Tecnologia/Reviews)</option>
-                                        <option value="future">Fórmula FUTURE (Inovação/Futuro)</option>
-                                    </optgroup>
-                                    <optgroup label="🎭 DRAMA & MISTÉRIO">
-                                        <option value="mystery">Fórmula MYSTERY (True Crime/Mistério)</option>
-                                        <option value="reveal">Fórmula REVEAL (Investigação)</option>
-                                        <option value="suspense">Fórmula SUSPENSE (Narrativas Tensas)</option>
-                                    </optgroup>
-                                    <optgroup label="🧠 PSICOLOGIA & DESENVOLVIMENTO PESSOAL">
-                                        <option value="mindset">Fórmula MINDSET (Mudança de Mentalidade)</option>
-                                        <option value="breakthrough">Fórmula BREAKTHROUGH (Superação)</option>
-                                        <option value="habit">Fórmula HABIT (Formação de Hábitos)</option>
-                                    </optgroup>
-                                    <optgroup label="🌍 VIAGEM & CULTURA">
-                                        <option value="travel">Fórmula TRAVEL (Viagens)</option>
-                                        <option value="culture">Fórmula CULTURE (Exploração Cultural)</option>
-                                        <option value="explore">Fórmula EXPLORE (Lugares/Experiências)</option>
-                                    </optgroup>
-                                    <optgroup label="📈 FINANÇAS & INVESTIMENTOS">
-                                        <option value="wealth">Fórmula WEALTH (Construção de Riqueza)</option>
-                                        <option value="invest">Fórmula INVEST (Investimentos)</option>
-                                        <option value="money">Fórmula MONEY (Educação Financeira)</option>
-                                    </optgroup>
-                                    <optgroup label="🎪 FÓRMULAS HÍBRIDAS ESPECIAIS">
-                                        <option value="viral_edu">Fórmula VIRAL EDUCATIVA (Edutainment)</option>
-                                        <option value="story_master">Fórmula STORYTELLING MASTER (Narrativas Envolventes)</option>
-                                        <option value="comparison">Fórmula COMPARISON (Comparações/Reviews)</option>
-                                        <option value="transformation">Fórmula TRANSFORMATION (Mudança/Evolução)</option>
-                                    </optgroup>
-                                </select>
                             </div>
                              <div>
                                 <label class="text-sm font-medium text-gray-700">Posição do CTA (Chamada para Ação)</label>
@@ -1017,58 +925,128 @@
         }
     }
 
-    // MODIFICADO: Função do prompt agora aceita uma fórmula e a incorpora.
-    const getPromptByLanguage = (lang, data, formulaKey) => {
+    const getPromptByLanguage = (lang, data) => {
         const { topic, niche, audience, tone, trendsLine, duration, parts, narrationStyle, ctaText, affiliateInstruction } = data;
         
-        const formulas = {
-            'master': 'Fórmula MASTER (Skill Learning)\n\nMOTIVAÇÃO → ASSESSMENT → SCAFFOLDING → TESTING → EVOLUÇÃO → RECURSOS\n\n- Motivação: Mostrar o resultado final possível.\n- Assessment: Avaliar nível atual do viewer.\n- Scaffolding: Estruturar aprendizado em steps.\n- Testing: Testar conhecimento (quiz/exercício).\n- Evolução: Evoluir para próximo nível.\n- Recursos: Oferecer recursos para continuar.',
-            'teach': 'Fórmula TEACH (Conceitos Complexos)\n\nTRIGGER → EXPLAIN → ANALOGIA → CONNECT → HABIT\n\n- Trigger: Por que isso importa agora.\n- Explain: Explicar o conceito principal.\n- Analogia: Usar comparações familiares.\n- Connect: Ligar à experiência do viewer.\n- Habit: Mostrar como incorporar no dia a dia.',
-            'profit': 'Fórmula PROFIT (Estratégias de Negócio)\n\nPROBLEMA → RESEARCH → OPORTUNIDADE → FRAMEWORK → IMPLEMENTAÇÃO → TRACKING',
-            'scale': 'Fórmula SCALE (Growth & Scaling)\n\nSITUAÇÃO → CASE STUDY → ANÁLISE → LIÇÕES → EXECUÇÃO',
-            'success': 'Fórmula SUCCESS (Mindset Empresarial)\n\nSTRUGGLES → UNDERSTANDING → CHANGE → CONFIDENCE → EXECUTION → SYSTEMS → SUCCESS',
-            'convert': 'Fórmula CONVERT (Persuasão/Vendas)\n\nCREDIBILIDADE → OPORTUNIDADE → NECESSIDADE → VANTAGEM → EVIDÊNCIA → RISCOS → TIMING',
-            'viral': 'Fórmula VIRAL (Content Marketing)\n\nVALOR → INSIGHTS → RELEVÂNCIA → APLICABILIDADE → LEMBRETE',
-            'brand': 'Fórmula BRAND (Personal Branding)\n\nBASELINE → REBUILD → AUTHENTIC → NETWORK → DELIVERY',
-            'fit': 'Fórmula FIT (Exercícios/Treino)\n\nFORMA → INTENSIDADE → TIMING\n\n- Forma: Demonstrar forma correta.\n- Intensidade: Mostrar progressões de intensidade.\n- Timing: Explicar quando/quanto fazer.',
-            'transform': 'Fórmula TRANSFORM (Transformação Física)\n\nTRUTH → ROADMAP → ASSESSMENT → NUTRITION → SYSTEMS → FORM → OPTIMIZE → RECOVER → MINDSET',
-            'heal': 'Fórmula HEAL (Saúde/Wellness)\n\nSINTOMAS → CAUSAS → SOLUÇÕES → PREVENÇÃO → MANUTENÇÃO',
-            'epic': 'Fórmula EPIC (Gaming Content)\n\nEXPECTATIVA → PROGRESSÃO → INTENSIDADE → CLÍMAX',
-            'story': 'Fórmula STORY (Narrative Content)\n\nSETUP → TENSION → OBSTACLE → RESOLUTION → YOKAI (elemento inesperado/twist)',
-            'react': 'Fórmula REACT (Reaction Content)\n\nRELEVÂNCIA → EXPERIÊNCIA → ANÁLISE → CONEXÃO → TAKEAWAY',
-            'cook': 'Fórmula COOK (Receitas/Culinária)\n\nCRAVING → OVERVIEW → ORGANIZAÇÃO → KITCHEN TIPS\n\n- Craving: Despertar desejo pela comida.\n- Overview: Visão geral do prato final.\n- Organização: Organizar ingredientes/preparo.\n- Kitchen Tips: Dicas profissionais.',
-            'taste': 'Fórmula TASTE (Food Reviews)\n\nTEASE → APPEARANCE → STORY → TASTE → EVALUATION',
-            'home': 'Fórmula HOME (Decoração/Organização)\n\nHUMBLE → OPTIMIZE → MAKEOVER → ENJOY',
-            'create': 'Fórmula CREATE (Processo Criativo)\n\nCONCEITO → REFERÊNCIAS → ESBOÇO → APLICAÇÃO → TÉCNICAS → EXECUÇÃO',
-            'inspire': 'Fórmula INSPIRE (Arte/Design)\n\nINSIGHT → NECESSIDADE → SOLUÇÃO → PROCESSO → INSIGHTS → REVELAÇÃO → EVOLUÇÃO',
-            'craft': 'Fórmula CRAFT (DIY/Artesanato)\n\nCURIOSIDADE → RECURSOS → APLICAÇÃO → FINALIZAÇÃO → TIPS',
-            'discover': 'Fórmula DISCOVER (Ciência/Pesquisa)\n\nDÚVIDA → INVESTIGAÇÃO → SURPRESA → COMPREENSÃO → OPORTUNIDADE → VERIFICAÇÃO → EVOLUÇÃO → REFLEXÃO',
-            'tech': 'Fórmula TECH (Tecnologia/Reviews)\n\nTENDÊNCIA → ESPECIFICAÇÕES → COMPARAÇÃO → HANDS-ON',
-            'future': 'Fórmula FUTURE (Inovação/Futuro)\n\nPRESENTE → PROBLEMA → SOLUÇÃO → IMPLICAÇÕES → TIMELINE → PREPARAÇÃO',
-            'mystery': 'Fórmula MYSTERY (True Crime/Mistério)\n\nMISTERIO → YIELD → SERIES → TWIST → EVIDENCE → RESOLUTION → YOKAI',
-            'reveal': 'Fórmula REVEAL (Investigação)\n\nRITUAL → EVIDÊNCIAS → VÁRIOS ÂNGULOS → EXPERT → ANALYSIS → LINKS',
-            'suspense': 'Fórmula SUSPENSE (Narrativas Tensas)\n\nSERENIDADE → UNUSUAL → SINAIS → PROBLEMA → ESCALAÇÃO → NIGHTMARE → SOLUÇÃO → ENDING',
-            'mindset': 'Fórmula MINDSET (Mudança de Mentalidade)\n\nMIRROR → INSIGHTS → NOVA PERSPECTIVA → DESAFIO → SISTEMAS → EVOLUÇÃO → TRACKING',
-            'breakthrough': 'Fórmula BREAKTHROUGH (Superação)\n\nBLOCKAGE → REVELAÇÃO → ENTENDIMENTO → APLICAÇÃO → KLEINGELD → TRACKING → HABITS → RESULTADO → OPORTUNIDADE → UPGRADE → GROWTH → HABITS',
-            'habit': 'Fórmula HABIT (Formação de Hábitos)\n\nHÁBITO ATUAL → ANÁLISE → BINDING → IMPLEMENTAÇÃO → TRACKING → SYSTEMS',
-            'travel': 'Fórmula TRAVEL (Viagens)\n\nTRANSPORT → REALIDADE → AVENTURA → VISÃO → EXPERIENCE → LIÇÕES',
-            'culture': 'Fórmula CULTURE (Exploração Cultural)\n\nCONTEXTO → UNIÃO → LIÇÕES → TRADIÇÕES → UNDERSTANDING → REFLEXÃO → EVOLUÇÃO',
-            'explore': 'Fórmula EXPLORE (Lugares/Experiências)\n\nEXPECTATIVA → XADREZ → PRIMEIRA IMPRESSÃO → LANDMARKS → OPORTUNIDADE → REVELAÇÃO → EVOLUÇÃO',
-            'wealth': 'Fórmula WEALTH (Construção de Riqueza)\n\nWHERE YOU ARE → EARNINGS → ANALYSIS → LEVERAGE → TRACKING → HABITS',
-            'invest': 'Fórmula INVEST (Investimentos)\n\nINSIGHTS → NUMBERS → VANTAGENS → ESTRATÉGIA → SIMULATION → TIMING',
-            'money': 'Fórmula MONEY (Educação Financeira)\n\nMONEY BLOCKS → OPPORTUNITIES → NECESSIDADES → ESTRATÉGIAS → YOKAI',
-            'viral_edu': 'Fórmula VIRAL EDUCATIVA (Edutainment)\n\nVIRAL HOOK → INSIGHT → REVELAÇÃO → APLICAÇÃO → LIÇÕES',
-            'story_master': 'Fórmula STORYTELLING MASTER (Narrativas Envolventes)\n\nSETUP EMOCIONAL → TENSION → OBSTACLES → REVELAÇÃO → YOKAI → TRANSFORMATION → TAKEAWAY → ENDING MEMORÁVEL',
-            'comparison': 'Fórmula COMPARISON (Comparações/Reviews)\n\nCONTEXTO → OPTIONS → METHODOLOGY → PROS/CONS → ANALYSIS → RECOMMENDATION → INSIGHTS → SUMMARY',
-            'transformation': 'Fórmula TRANSFORMATION (Mudança/Evolução)\n\nTRUTH (situação real) → ROADMAP → ASSESSMENT → NOVA PERSPECTIVA → SISTEMA → FORM → OTIMIZAÇÃO → RESULTADO → MAINTENANCE → EVOLUÇÃO'
-        };
-
-        const selectedFormula = formulas[formulaKey] || 'Nenhuma fórmula selecionada. Crie um roteiro padrão de alta retenção.';
-
         const templates = {
+            'Italian': {
+                main: `Sei DARKSCRIPT, uno sceneggiatore d'élite per YouTube. La tua unica missione è generare uno script completo, dettagliato e perfettamente strutturato in base alle specifiche esatte fornite. Non seguire le regole di struttura è inaccettabile.`,
+                specs: `**SPECIFICHE DELLO SCRIPT:**`,
+                topic: `- TEMA CENTRALE: ${topic}`,
+                niche: `- NICCHIA: ${niche}`,
+                audience: `- PUBBLICO DI RIFERIMENTO: ${audience}`,
+                tone: `- TONO NARRATIVO: ${tone}`,
+                lang: `- LINGUA: Italiano`,
+                trends: `- TERMINE DI TENDENZA: ${trendsLine}`,
+                duration: `- DURATA STIMATA: ${duration} minuti`,
+                triggers: `**TRIGGER PSICOLOGICI AVANZATI PER UN'ALTA RITENZIONE (OBBLIGATORIO):**`,
+                hook: `- **Gancio Iniziale Forte:** Inizia con una promessa audace, una domanda provocatoria o una dichiarazione che rompa uno schema per generare CURIOSITÀ IMMEDIATA.`,
+                loops: `- **Loop di Curiosità Aperti:** In ogni parte, introduci un nuovo mistero o una domanda a cui si risponderà solo più avanti, costringendo lo spettatore a continuare a guardare.`,
+                tension: `- **Picchi di Tensione e Rilassamento:** Alterna momenti di alta energia/tensione e momenti più tranquilli per creare un'altalena emotiva che catturi l'attenzione.`,
+                storytelling: `- **Storytelling Magnetico:** Utilizza una narrazione chiara con un inizio, uno sviluppo (con un conflitto crescente) e una fine (con una risoluzione soddisfacente o un cliffhanger per il video successivo).`,
+                rules: `**REGOLE ASSOLUTE E INVIOLABILI:**`,
+                rule1: `1. **REGOLA DI COMPLETEZZA (MASSIMA PRIORITÀ):** DEVI generare il contenuto completo per TUTTE le ${parts} parti richieste. È vietato fermarsi a metà.`,
+                rule2: `2. **REGOLA DI DENSITÀ DEL CONTENUTO (MASSIMA PRIORITÀ):** Ogni singola parte DEVE contenere circa **2500 CARATTERI** (circa 400 parole). Script con parti brevi (meno di 2000 caratteri) sono considerati un fallimento. Sii approfondito, dettagliato ed esplora l'argomento per raggiungere questo obiettivo in OGNI parte.`,
+                rule3: `3. **REGOLA DI STRUTTURA DEI PARAGRAFI:** Il contenuto denso di ogni parte (~2500 caratteri) DEVE essere suddiviso in esattamente **5 paragrafi** coerenti e ben scritti.`,
+                rule4: `4. **REGOLA DEL NUMERO DI PARTI:** Lo script finale DEVE contenere esattamente ${parts} parti. Né più, né meno.`,
+                rule5: `5. **NARRAZIONE E CTA:**`,
+                narration: `- Stile: ${narrationStyle}`,
+                cta: `- CTA: Includi inviti all'azione in modo organico nelle seguenti sezioni: ${ctaText}.`,
+                affiliate: affiliateInstruction,
+                output: `**ISTRUZIONI DI OUTPUT (FORMATO TESTO STRUTTURATO OBBLIGATORIO):**`,
+                output1: `- Sulla PRIMA riga, e SOLO sulla prima riga, inserisci i punteggi nel seguente formato JSON:\nSCORES:{"retention_potential": <score>, "clarity_score": <score>, "viral_potential": <score>}`,
+                output2: `- Dalla seconda riga, inizia lo script.`,
+                output3: `- Usa il seguente marcatore per separare OGNI parte dello script:\n[--PART <numero>: <titolo della parte>--]\n<contenuto della parte con 5 paragrafi e ~2500 caratteri>\n[--ENDPART--]`
+            },
+            'German': {
+                main: `Sie sind DARKSCRIPT, ein Elite-Drehbuchautor für YouTube. Ihre einzige Aufgabe ist es, ein vollständiges, detailliertes und perfekt strukturiertes Drehbuch gemäß den genauen Vorgaben zu erstellen. Das Nichtbefolgen der Strukturregeln ist inakzeptabel.`,
+                specs: `**DREHBUCH-SPEZIFIKATIONEN:**`,
+                topic: `- ZENTRALES THEMA: ${topic}`,
+                niche: `- NISCHE: ${niche}`,
+                audience: `- ZIELGRUPPE: ${audience}`,
+                tone: `- ERZÄHLTON: ${tone}`,
+                lang: `- SPRACHE: Deutsch`,
+                trends: `- TRENDBEGRIFF: ${trendsLine}`,
+                duration: `- GESCHÄTZTE DAUER: ${duration} Minuten`,
+                triggers: `**FORTGESCHRITTENE PSYCHOLOGISCHE TRIGGER FÜR HOHE BINDUNG (OBLIGATORISCH):**`,
+                hook: `- **Starker Anfangs-Hook:** Beginnen Sie mit einem kühnen Versprechen, einer provokanten Frage oder einer musterbrechenden Aussage, um SOFORTIGE NEUGIER zu wecken.`,
+                loops: `- **Offene Neugier-Schleifen:** Führen Sie in jedem Teil ein neues Rätsel oder eine Frage ein, die erst später beantwortet wird, um den Zuschauer zum Weiterschauen zu zwingen.`,
+                tension: `- **Spannungs- und Entspannungsspitzen:** Wechseln Sie zwischen Momenten hoher Energie/Spannung und ruhigeren Momenten, um eine emotionale Achterbahnfahrt zu schaffen, die die Aufmerksamkeit fesselt.`,
+                storytelling: `- **Magnetisches Storytelling:** Verwenden Sie eine klare Erzählung mit Anfang, Mitte (mit wachsendem Konflikt) und Ende (mit einer zufriedenstellenden Auflösung oder einem Cliffhanger für das nächste Video).`,
+                rules: `**ABSOLUTE UND UNVERLETZLICHE REGELN:**`,
+                rule1: `1. **VOLLSTÄNDIGKEITSREGEL (HÖCHSTE PRIORITÄT):** Sie MÜSSEN den vollständigen Inhalt für ALLE ${parts} angeforderten Teile generieren. Es ist verboten, mittendrin aufzuhören.`,
+                rule2: `2. **INHALTSDICHTE-REGEL (HÖCHSTE PRIORITÄT):** Jeder einzelne Teil MUSS ungefähr **2500 ZEICHEN** (etwa 400 Wörter) umfassen. Drehbücher mit kurzen Teilen (weniger als 2000 Zeichen) werden als Fehlschlag gewertet. Seien Sie tiefgründig, detailliert und erforschen Sie das Thema, um dieses Ziel in JEDEM Teil zu erreichen.`,
+                rule3: `3. **ABSATZSTRUKTUR-REGEL:** Der dichte Inhalt jedes Teils (~2500 Zeichen) MUSS in genau **5 zusammenhängende und gut geschriebene Absätze** unterteilt sein.`,
+                rule4: `4. **ANZAHL-DER-TEILE-REGEL:** Das endgültige Drehbuch MUSS genau ${parts} Teile enthalten. Nicht mehr und nicht weniger.`,
+                rule5: `5. **ERZÄHLUNG UND CTAs:**`,
+                narration: `- Stil: ${narrationStyle}`,
+                cta: `- CTAs: Fügen Sie Handlungsaufforderungen organisch in die folgenden Abschnitte ein: ${ctaText}.`,
+                affiliate: affiliateInstruction,
+                output: `**AUSGABEANWEISUNGEN (OBLIGATORISCHES STRUKTURIERTES TEXTFORMAT):**`,
+                output1: `- In der ERSTEN und NUR in der ersten Zeile die Bewertungen im folgenden JSON-Format platzieren:\nSCORES:{"retention_potential": <score>, "clarity_score": <score>, "viral_potential": <score>}`,
+                output2: `- Ab der zweiten Zeile mit dem Drehbuch beginnen.`,
+                output3: `- Verwenden Sie den folgenden Marker, um JEDEN Teil des Drehbuchs zu trennen:\n[--PART <nummer>: <titel des teils>--]\n<inhalt des teils mit 5 absätzen und ~2500 zeichen>\n[--ENDPART--]`
+            },
+            'French': {
+                 main: `Vous êtes DARKSCRIPT, un scénariste d'élite pour YouTube. Votre seule mission est de générer un script complet, détaillé et parfaitement structuré en fonction des spécifications exactes fournies. Ne pas suivre les règles de structure est inacceptable.`,
+                specs: `**SPÉCIFICATIONS DU SCRIPT :**`,
+                topic: `- THÈME CENTRAL : ${topic}`,
+                niche: `- NICHE : ${niche}`,
+                audience: `- PUBLIC CIBLE : ${audience}`,
+                tone: `- TON NARRATIF : ${tone}`,
+                lang: `- LANGUE : Français`,
+                trends: `- TERME TENDANCE : ${trendsLine}`,
+                duration: `- DURÉE ESTIMÉE : ${duration} minutes`,
+                triggers: `**DÉCLENCHEURS PSYCHOLOGIQUES AVANCÉS POUR UNE RÉTENTION ÉLEVÉE (OBLIGATOIRE) :**`,
+                hook: `- **Accroche Initiale Forte :** Commencez par une promesse audacieuse, une question provocante ou une déclaration qui brise un schéma pour susciter une CURIOSITÉ IMMÉDIATE.`,
+                loops: `- **Boucles de Curiosité Ouvertes :** Dans chaque partie, introduisez un nouveau mystère ou une question qui ne sera résolue que plus tard, forçant le spectateur à continuer de regarder.`,
+                tension: `- **Pics de Tension et de Relâchement :** Alternez entre des moments de haute énergie/tension et des moments plus calmes pour créer des montagnes russes émotionnelles qui captivent l'attention.`,
+                storytelling: `- **Storytelling Magnétique :** Utilisez une narration claire avec un début, un milieu (avec un conflit croissant) et une fin (avec une résolution satisfaisante ou un suspense pour la prochaine vidéo).`,
+                rules: `**RÈGLES ABSOLUES ET INVIOLABLES :**`,
+                rule1: `1. **RÈGLE DE COMPLÉTUDE (PRIORITÉ MAXIMALE) :** Vous DEVEZ générer le contenu complet pour TOUTES les ${parts} parties demandées. Il est interdit de s'arrêter en cours de route.`,
+                rule2: `2. **RÈGLE DE DENSITÉ DE CONTENU (PRIORITÉ MAXIMALE) :** Chaque partie individuelle DOIT contenir environ **2500 CARACTÈRES** (environ 400 mots). Les scripts avec des parties courtes (moins de 2000 caractères) sont considérés comme un échec. Soyez approfondi, détaillé et explorez le sujet pour atteindre cet objectif dans CHAQUE partie.`,
+                rule3: `3. **RÈGLE DE STRUCTURE DES PARAGRAPHES :** Le contenu dense de chaque partie (~2500 caractères) DOIT être divisé en exactement **5 paragraphes** cohérents et bien écrits.`,
+                rule4: `4. **RÈGLE DU NOMBRE DE PARTIES :** Le script final DOIT contenir exactement ${parts} parties. Ni plus, ni moins.`,
+                rule5: `5. **NARRATION ET CTAs :**`,
+                narration: `- Style : ${narrationStyle}`,
+                cta: `- CTAs : Incluez des appels à l'action de manière organique dans les sections suivantes : ${ctaText}.`,
+                affiliate: affiliateInstruction,
+                output: `**INSTRUCTIONS DE SORTIE (FORMAT DE TEXTE STRUCTURÉ OBLIGATOIRE) :**`,
+                output1: `- Sur la PREMIÈRE ligne, et UNIQUEMENT sur la première ligne, placez les scores au format JSON suivant :\nSCORES:{"retention_potential": <score>, "clarity_score": <score>, "viral_potential": <score>}`,
+                output2: `- À partir de la deuxième ligne, commencez le script.`,
+                output3: `- Utilisez le marqueur suivant pour séparer CHAQUE partie du script :\n[--PART <numéro>: <titre de la partie>--]\n<contenu de la partie avec 5 paragraphes et ~2500 caractères>\n[--ENDPART--]`
+            },
+            'Spanish (Spain)': {
+                main: `Eres DARKSCRIPT, un guionista de élite para YouTube. Tu única misión es generar un guion completo, detallado y perfectamente estructurado basándote en las especificaciones exactas proporcionadas. No seguir las reglas de estructura es inaceptable.`,
+                specs: `**ESPECIFICACIONES DEL GUION:**`,
+                topic: `- TEMA CENTRAL: ${topic}`,
+                niche: `- NICHO: ${niche}`,
+                audience: `- PÚBLICO OBJETIVO: ${audience}`,
+                tone: `- TONO NARRATIVO: ${tone}`,
+                lang: `- IDIOMA: Español`,
+                trends: `- TÉRMINO DE TENDENCIA: ${trendsLine}`,
+                duration: `- DURACIÓN ESTIMADA: ${duration} minutos`,
+                triggers: `**DISPARADORES PSICOLÓGICOS AVANZADOS PARA ALTA RETENCIÓN (OBLIGATORIO):**`,
+                hook: `- **Gancho Inicial Fuerte:** Comienza con una promesa audaz, una pregunta provocadora o una declaración que rompa un patrón para generar CURIOSIDAD INMEDIATA.`,
+                loops: `- **Bucles de Curiosidad Abiertos:** En cada parte, introduce un nuevo misterio o una pregunta que solo se responderá más adelante, obligando al espectador a seguir viendo.`,
+                tension: `- **Picos de Tensión y Alivio:** Alterna entre momentos de alta energía/tensión y momentos más tranquilos para crear una montaña rusa emocional que atrape la atención.`,
+                storytelling: `- **Storytelling Magnético:** Usa una narrativa clara con un principio, un desarrollo (con un conflicto creciente) y un final (con una resolución satisfactoria o un gancho para el próximo vídeo).`,
+                rules: `**REGLAS ABSOLUTAS E INQUEBRANTABLES:**`,
+                rule1: `1. **REGLA DE COMPLETITUD (MÁXIMA PRIORIDAD):** DEBES generar el contenido completo para TODAS las ${parts} partes solicitadas. Está prohibido detenerse a la mitad.`,
+                rule2: `2. **REGLA DE DENSIDAD DE CONTENIDO (MÁXIMA PRIORIDAD):** Cada parte individual DEBE tener aproximadamente **2500 CARACTERES** (unas 400 palabras). Los guiones con partes cortas (menos de 2000 caracteres) se consideran un fracaso. Sé profundo, detallado y explora el tema para alcanzar este objetivo en CADA parte.`,
+                rule3: `3. **REGLA DE ESTRUCTURA DE PÁRRAFOS:** El denso contenido de cada parte (~2500 caracteres) DEBE dividirse en exactamente **5 párrafos** coherentes y bien escritos.`,
+                rule4: `4. **REGLA DEL NÚMERO DE PARTES:** El guion final DEBE contener exactamente ${parts} partes. Ni más, ni menos.`,
+                rule5: `5. **NARRACIÓN Y CTAs:**`,
+                narration: `- Estilo: ${narrationStyle}`,
+                cta: `- CTAs: Incluye llamadas a la acción de forma orgánica en las siguientes secciones: ${ctaText}.`,
+                affiliate: affiliateInstruction,
+                output: `**INSTRUCCIONES DE SALIDA (FORMATO DE TEXTO ESTRUCTURADO OBLIGATORIO):**`,
+                output1: `- En la PRIMERA línea, y SÓLO en la primera línea, coloca las puntuaciones en el siguiente formato JSON:\nSCORES:{"retention_potential": <score>, "clarity_score": <score>, "viral_potential": <score>}`,
+                output2: `- A partir de la segunda línea, comienza el guion.`,
+                output3: `- Usa el siguiente marcador para separar CADA parte del guion:\n[--PART <número>: <título de la parte>--]\n<contenido de la parte con 5 párrafos y ~2500 caracteres>\n[--ENDPART--]`
+            },
             'default': {
-                main: `Você é o DARKSCRIPT, um roteirista de elite para o YouTube. Sua missão é gerar um roteiro completo, detalhado e perfeitamente estruturado com base nas especificações exatas e na fórmula de copywriting fornecida. Falhar em seguir as regras é inaceitável.`,
-                formula_section: `**FÓRMULA DE ESTRUTURA (OBRIGATÓRIA):**\nSiga ESTRITAMENTE a seguinte fórmula de copywriting para estruturar o roteiro:\n\n${selectedFormula}\n\nAplique cada etapa da fórmula de forma clara e deliberada ao longo das ${parts} partes do roteiro.`,
+                main: `Você é o DARKSCRIPT, um roteirista de elite para o YouTube. Sua única missão é gerar um roteiro completo, detalhado e perfeitamente estruturado com base nas especificações exatas fornecidas. Falhar em seguir as regras de estrutura é inaceitável.`,
                 specs: `**ESPECIFICAÇÕES DO ROTEIRO:**`,
                 topic: `- TEMA CENTRAL: ${topic}`,
                 niche: `- NICHO: ${niche}`,
@@ -1077,6 +1055,11 @@
                 lang: `- IDIOMA: ${lang}`,
                 trends: `- TERMO EM ALTA: ${trendsLine}`,
                 duration: `- DURAÇÃO ESTIMADA: ${duration} minutos`,
+                triggers: `**GATILHOS PSICOLÓGICOS AVANÇADOS PARA ALTA RETENÇÃO (OBRIGATÓRIO):**`,
+                hook: `- **Hook Inicial Forte:** Comece com uma promessa ousada, uma pergunta provocativa ou uma declaração que quebre um padrão para gerar CURIOSIDADE IMEDIATA.`,
+                loops: `- **Loops de Curiosidade Abertos:** A cada parte, introduza um novo mistério ou uma pergunta que só será respondida mais à frente, forçando o espectador a continuar assistindo.`,
+                tension: `- **Picos de Tensão e Alívio:** Alterne entre momentos de alta energia/tensão e momentos mais calmos para criar uma montanha-russa emocional que prenda a atenção.`,
+                storytelling: `- **Storytelling Magnético:** Use uma narrativa clara com começo, meio (com conflito crescente) e fim (com uma resolução satisfatória ou um gancho para o próximo vídeo).`,
                 rules: `**REGRAS ABSOLUTAS E INQUEBRÁVEIS:**`,
                 rule1: `1.  **REGRA DE COMPLETUDE (PRIORIDADE MÁXIMA):** Você DEVE gerar o conteúdo completo para TODAS as ${parts} partes solicitadas. É proibido parar no meio.`,
                 rule2: `2.  **REGRA DE DENSIDADE DE CONTEÚDO (PRIORIDADE MÁXIMA):** Cada parte individual DEVE ter aproximadamente **2500 CARACTERES** (cerca de 400 palavras). Roteiros com partes curtas (menos de 2000 caracteres) são considerados falhas. Seja profundo, detalhado e explore o tópico para atingir essa meta em CADA parte.`,
@@ -1096,8 +1079,9 @@
         const t = templates[lang] || templates['default'];
         
         return [
-            t.main, t.formula_section, t.specs, t.topic, t.niche, t.audience, t.tone, t.lang,
-            (trendsLine ? t.trends : ''), t.duration, t.rules, t.rule1, t.rule2, t.rule3, t.rule4, t.rule5,
+            t.main, t.specs, t.topic, t.niche, t.audience, t.tone, t.lang,
+            (trendsLine ? t.trends : ''), t.duration, t.triggers, t.hook, t.loops,
+            t.tension, t.storytelling, t.rules, t.rule1, t.rule2, t.rule3, t.rule4, t.rule5,
             t.narration, t.cta, t.affiliate, t.output, t.output1, t.output2, t.output3
         ].filter(Boolean).join('\n\n');
     }
@@ -1115,15 +1099,10 @@
             const affiliateProduct = document.getElementById('affiliate-product-description').value.trim();
             const tone = document.getElementById('script-tone').value;
             const lang = document.getElementById('script-lang').value;
-            const formula = document.getElementById('script-formula').value;
             const ctaPositions = Array.from(document.querySelectorAll('[id^="cta-"]:checked')).map(cb => cb.id.replace('cta-', ''));
 
             if (!topic || !duration || !niche || !audience) {
                 alert("Por favor, preencha todos os campos obrigatórios.");
-                return;
-            }
-            if (!formula) {
-                alert("Por favor, selecione uma Fórmula de Estrutura.");
                 return;
             }
             
@@ -1142,11 +1121,13 @@
                 affiliateInstruction: includeAffiliate ? `INSTRUÇÃO ADICIONAL (ALTA PRIORIDADE): - Integre de forma NATURAL e PERSUASIVA uma menção ao seguinte produto de afiliação no roteiro: "${affiliateProduct}".` : ''
             };
             
-            const prompt = getPromptByLanguage(lang, promptData, formula);
+            const prompt = getPromptByLanguage(lang, promptData);
 
+            // We ask for TEXT now, not JSON, to avoid formatting errors from the AI.
             const resultText = (await callAIModel(prompt, null)).text;
 
             try {
+                // Now, we parse the structured text safely in Javascript
                 const lines = resultText.split('\n');
                 const scoresLine = lines.find(line => line.startsWith('SCORES:'));
                 const scores = scoresLine ? JSON.parse(scoresLine.replace('SCORES:', '').trim()) : { retention_potential: 75, clarity_score: 75, viral_potential: 75 };
@@ -1457,7 +1438,7 @@
             
             document.getElementById('download-srt-btn').addEventListener('click', () => {
                 const srtFinalContent = document.getElementById('srt-result-content').textContent;
-                downloadFile(srtFinalContent, 'legendas.srt');
+                downloadAsTxt(srtFinalContent, 'legendas.srt');
             });
 
             document.getElementById('clear-srt-btn').addEventListener('click', () => {
@@ -1920,7 +1901,7 @@
         }
         if (e.target.id === 'save-script-txt-btn' && scriptResults.fullResult) {
             const topic = document.getElementById('script-topic').value.trim() || 'roteiro';
-            downloadFile(scriptResults.fullResult.full_script_text, topic.replace(/[^a-z0-9]/gi, '_').toLowerCase() + '.txt');
+            downloadAsTxt(scriptResults.fullResult.full_script_text, topic.replace(/[^a-z0-9]/gi, '_').toLowerCase());
         }
         if (e.target.id === 'clear-script-output-btn') {
             document.getElementById('output').innerHTML = '';
@@ -1940,7 +1921,7 @@
             const history = JSON.parse(localStorage.getItem('scriptHistory') || '[]');
             const scriptItem = history.find(item => item.id === scriptId);
             if (scriptItem) {
-                downloadFile(scriptItem.data.full_script_text, scriptItem.title.replace(/[^a-z0-9]/gi, '_').toLowerCase() + '.txt');
+                downloadAsTxt(scriptItem.data.full_script_text, scriptItem.title.replace(/[^a-z0-9]/gi, '_').toLowerCase());
             }
         }
 
@@ -1951,12 +1932,12 @@
             });
         }
         if (e.target.id === 'download-scene-prompts') {
-            downloadFile(scenePromptResults.allPromptsText, 'prompts_de_cena.txt');
+            downloadAsTxt(scenePromptResults.allPromptsText, 'prompts_de_cena');
         }
 
         // Thumbnail Prompts Action Buttons
         if (e.target.id === 'download-thumb-prompts') {
-            downloadFile(thumbnailPromptResults.allPromptsText, 'prompts_de_thumbnail.txt');
+            downloadAsTxt(thumbnailPromptResults.allPromptsText, 'prompts_de_thumbnail');
         }
     });
 
@@ -1972,3 +1953,4 @@
     </script>
 </body>
 </html>
+
