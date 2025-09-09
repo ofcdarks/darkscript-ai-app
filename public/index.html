@@ -551,6 +551,8 @@
             { id: 'text-divider', icon: 'M4 6h16M4 12h16M4 18h7', label: 'Divisor de Texto' },
             { type: 'divider', label: 'Sistema' },
             { id: 'settings', icon: 'M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z M15 12a3 3 0 11-6 0 3 3 0 016 0z', label: 'Configurações' },
+            // NOVO: Botão FAQ adicionado
+            { id: 'faq', icon: 'M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.79 4 4s-1.79 4-4 4c-1.742 0-3.223-.835-3.772-2H6.5v2H4.5v-2H2.728a1 1 0 010-2h1.772V7H6.5v2h1.728zM12 18a6 6 0 100-12 6 6 0 000 12z', label: 'FAQ' },
         ];
         if (appState.currentUser && appState.currentUser.role === 'admin') {
             navItems.push({ 
@@ -631,7 +633,6 @@
         }
     }
     
-    // MODIFICADO: Adicionado seletor de fórmula de estrutura.
     const tools = {
         "script-writer": { 
             title: "Criador de Roteiro", 
@@ -690,71 +691,109 @@
                             <div>
                                 <label for="script-formula" class="text-sm font-medium text-gray-700">Fórmula de Estrutura</label>
                                 <select id="script-formula" class="mt-1 w-full px-4 py-3 rounded-lg form-input">
-                                    <option value="" selected disabled>-- Selecione uma categoria --</option>
-                                    <optgroup label="🎓 EDUCAÇÃO & TUTORIAL">
-                                        <option value="master">Fórmula MASTER (Skill Learning)</option>
-                                        <option value="teach">Fórmula TEACH (Conceitos Complexos)</option>
+                                    <option value="" selected disabled>-- Selecione uma Fórmula --</option>
+                                    <optgroup label="🛡️ FÓRMULA PADRÃO">
+                                        <option value="universal_safe">UNIVERSAL SAFE (Padrão Seguro)</option>
+                                    </optgroup>
+                                    <optgroup label="✝️ CANAIS CRISTÃOS">
+                                        <option value="faith_journey">FAITH JOURNEY - crescimento espiritual</option>
+                                        <option value="testimony_power">TESTIMONY POWER - testemunhos impactantes</option>
+                                        <option value="bible_wisdom">BIBLE WISDOM - estudos bíblicos</option>
+                                        <option value="gospel_share">GOSPEL SHARE - evangelização</option>
+                                        <option value="praise_story">PRAISE STORY - histórias de fé</option>
+                                    </optgroup>
+                                    <optgroup label="💔 HISTÓRIAS EMOCIONANTES">
+                                        <option value="heart_break">HEART BREAK - narrativas emocionais intensas</option>
+                                        <option value="emotional_wave">EMOTIONAL WAVE - drama com build-up emocional</option>
+                                        <option value="life_change">LIFE CHANGE - transformações pessoais tocantes</option>
+                                    </optgroup>
+                                    <optgroup label="👻 TERROR & SUSPENSE">
+                                        <option value="fear_factor">FEAR FACTOR - terror psicológico</option>
+                                        <option value="nightmare_mode">NIGHTMARE MODE - horror stories completas</option>
+                                        <option value="creepy_truth">CREEPY TRUTH - mistérios sombrios</option>
+                                        <option value="haunted_real">HAUNTED REAL - paranormal/sobrenatural</option>
+                                    </optgroup>
+                                    <optgroup label="🏛️ CIVILIZAÇÕES ANTIGAS">
+                                        <option value="ancient_wisdom">ANCIENT WISDOM - civilizações perdidas</option>
+                                        <option value="mystery_past">MYSTERY PAST - enigmas históricos</option>
+                                        <option value="time_travel">TIME TRAVEL - jornadas históricas imersivas</option>
+                                        <option value="civilization_rise">CIVILIZATION RISE - ascensão e queda de impérios</option>
+                                    </optgroup>
+                                    <optgroup label="🚗 AUTOMOBILISMO & CARROS">
+                                        <option value="car_passion">CAR PASSION - paixão automotiva</option>
+                                        <option value="drive_test">DRIVE TEST - reviews detalhados</option>
+                                        <option value="speed_rush">SPEED RUSH - performance/racing</option>
+                                        <option value="auto_evolution">AUTO EVOLUTION - história automotiva</option>
+                                        <option value="garage_dreams">GARAGE DREAMS - cultura car</option>
+                                    </optgroup>
+                                    <optgroup label="🪐 PLANETAS & ESPAÇO">
+                                        <option value="space_wonder">SPACE WONDER - exploração espacial</option>
+                                        <option value="planet_deep">PLANET DEEP - estudos planetários</option>
+                                        <option value="cosmic_journey">COSMIC JOURNEY - viagens espaciais</option>
+                                        <option value="universe_scale">UNIVERSE SCALE - perspectiva cósmica</option>
+                                        <option value="alien_search">ALIEN SEARCH - vida extraterrestre</option>
+                                    </optgroup>
+                                    <optgroup label="🎓 EDUCAÇÃO & APRENDIZADO">
+                                        <option value="teach_master">TEACH MASTER (Conceitos Complexos)</option>
+                                        <option value="skill_build">SKILL BUILD (Desenvolvimento de Habilidades)</option>
+                                        <option value="concept_clarity">CONCEPT CLARITY (Explicações Didáticas)</option>
                                     </optgroup>
                                     <optgroup label="💰 NEGÓCIOS & EMPREENDEDORISMO">
-                                        <option value="profit">Fórmula PROFIT (Estratégias de Negócio)</option>
-                                        <option value="scale">Fórmula SCALE (Growth & Scaling)</option>
-                                        <option value="success">Fórmula SUCCESS (Mindset Empresarial)</option>
+                                        <option value="profit_system">PROFIT SYSTEM (Estratégias de Negócio)</option>
+                                        <option value="scale_smart">SCALE SMART (Crescimento)</option>
+                                        <option value="mindset_money">MINDSET MONEY (Mentalidade Empresarial)</option>
                                     </optgroup>
                                     <optgroup label="🎯 MARKETING & VENDAS">
-                                        <option value="convert">Fórmula CONVERT (Persuasão/Vendas)</option>
-                                        <option value="viral">Fórmula VIRAL (Content Marketing)</option>
-                                        <option value="brand">Fórmula BRAND (Personal Branding)</option>
+                                        <option value="convert_pro">CONVERT PRO (Persuasão/Vendas)</option>
+                                        <option value="viral_engine">VIRAL ENGINE (Content Marketing)</option>
+                                        <option value="authority_build">AUTHORITY BUILD (Personal Branding)</option>
                                     </optgroup>
-                                     <optgroup label="💪 FITNESS & SAÚDE">
-                                        <option value="fit">Fórmula FIT (Exercícios/Treino)</option>
-                                        <option value="transform">Fórmula TRANSFORM (Transformação Física)</option>
-                                        <option value="heal">Fórmula HEAL (Saúde/Wellness)</option>
+                                    <optgroup label="💪 FITNESS & SAÚDE">
+                                        <option value="transform_body">TRANSFORM BODY (Transformação Física)</option>
+                                        <option value="fit_fast">FIT FAST (Exercícios Rápidos)</option>
+                                        <option value="health_hack">HEALTH HACK (Saúde/Wellness)</option>
                                     </optgroup>
                                     <optgroup label="🎮 ENTRETENIMENTO & GAMING">
-                                        <option value="epic">Fórmula EPIC (Gaming Content)</option>
-                                        <option value="story">Fórmula STORY (Narrative Content)</option>
-                                        <option value="react">Fórmula REACT (Reaction Content)</option>
+                                        <option value="epic_moment">EPIC MOMENT (Gaming Content)</option>
+                                        <option value="story_master_game">STORY MASTER (Narrativas)</option>
+                                        <option value="react_value">REACT VALUE (Reaction Content)</option>
                                     </optgroup>
                                     <optgroup label="🍳 CULINÁRIA & LIFESTYLE">
-                                        <option value="cook">Fórmula COOK (Receitas/Culinária)</option>
-                                        <option value="taste">Fórmula TASTE (Food Reviews)</option>
-                                        <option value="home">Fórmula HOME (Decoração/Organização)</option>
+                                        <option value="cook_expert">COOK EXPERT (Receitas)</option>
+                                        <option value="taste_journey">TASTE JOURNEY (Food Reviews)</option>
+                                        <option value="home_transform">HOME TRANSFORM (Casa/Organização)</option>
                                     </optgroup>
                                     <optgroup label="🎨 ARTE & CRIATIVIDADE">
-                                        <option value="create">Fórmula CREATE (Processo Criativo)</option>
-                                        <option value="inspire">Fórmula INSPIRE (Arte/Design)</option>
-                                        <option value="craft">Fórmula CRAFT (DIY/Artesanato)</option>
+                                        <option value="create_magic">CREATE MAGIC (Processo Criativo)</option>
+                                        <option value="inspire_deep">INSPIRE DEEP (Arte/Design)</option>
                                     </optgroup>
                                     <optgroup label="🔬 CIÊNCIA & TECNOLOGIA">
-                                        <option value="discover">Fórmula DISCOVER (Ciência/Pesquisa)</option>
-                                        <option value="tech">Fórmula TECH (Tecnologia/Reviews)</option>
-                                        <option value="future">Fórmula FUTURE (Inovação/Futuro)</option>
+                                        <option value="discovery_method">DISCOVERY METHOD (Pesquisa/Ciência)</option>
+                                        <option value="tech_review">TECH REVIEW (Tecnologia)</option>
+                                        <option value="future_vision">FUTURE VISION (Inovação)</option>
                                     </optgroup>
                                     <optgroup label="🎭 DRAMA & MISTÉRIO">
-                                        <option value="mystery">Fórmula MYSTERY (True Crime/Mistério)</option>
-                                        <option value="reveal">Fórmula REVEAL (Investigação)</option>
-                                        <option value="suspense">Fórmula SUSPENSE (Narrativas Tensas)</option>
+                                        <option value="mystery_solver">MYSTERY SOLVER (True Crime)</option>
+                                        <option value="reveal_process">REVEAL PROCESS (Investigação)</option>
                                     </optgroup>
-                                    <optgroup label="🧠 PSICOLOGIA & DESENVOLVIMENTO PESSOAL">
-                                        <option value="mindset">Fórmula MINDSET (Mudança de Mentalidade)</option>
-                                        <option value="breakthrough">Fórmula BREAKTHROUGH (Superação)</option>
-                                        <option value="habit">Fórmula HABIT (Formação de Hábitos)</option>
+                                    <optgroup label="🧠 PSICOLOGIA & DESENVOLVIMENTO">
+                                        <option value="mindset_shift">MINDSET SHIFT (Mudança Mental)</option>
+                                        <option value="breakthrough_now">BREAKTHROUGH NOW (Superação)</option>
+                                        <option value="habit_master">HABIT MASTER (Formação de Hábitos)</option>
                                     </optgroup>
                                     <optgroup label="🌍 VIAGEM & CULTURA">
-                                        <option value="travel">Fórmula TRAVEL (Viagens)</option>
-                                        <option value="culture">Fórmula CULTURE (Exploração Cultural)</option>
-                                        <option value="explore">Fórmula EXPLORE (Lugares/Experiências)</option>
+                                        <option value="travel_deep">TRAVEL DEEP (Viagens)</option>
+                                        <option value="culture_immersion">CULTURE IMMERSION (Exploração Cultural)</option>
                                     </optgroup>
                                     <optgroup label="📈 FINANÇAS & INVESTIMENTOS">
-                                        <option value="wealth">Fórmula WEALTH (Construção de Riqueza)</option>
-                                        <option value="invest">Fórmula INVEST (Investimentos)</option>
-                                        <option value="money">Fórmula MONEY (Educação Financeira)</option>
+                                        <option value="wealth_build">WEALTH BUILD (Construção de Riqueza)</option>
+                                        <option value="invest_smart">INVEST SMART (Investimentos)</option>
+                                        <option value="money_mastery">MONEY MASTERY (Educação Financeira)</option>
                                     </optgroup>
-                                    <optgroup label="🎪 FÓRMULAS HÍBRIDAS ESPECIAIS">
-                                        <option value="viral_edu">Fórmula VIRAL EDUCATIVA (Edutainment)</option>
-                                        <option value="story_master">Fórmula STORYTELLING MASTER (Narrativas Envolventes)</option>
-                                        <option value="comparison">Fórmula COMPARISON (Comparações/Reviews)</option>
-                                        <option value="transformation">Fórmula TRANSFORMATION (Mudança/Evolução)</option>
+                                    <optgroup label="🎪 FÓRMULAS HÍBRIDAS AVANÇADAS">
+                                        <option value="viral_education">VIRAL EDUCATION (Edutainment)</option>
+                                        <option value="story_teach">STORY TEACH (Narrativa Educativa)</option>
+                                        <option value="comparison_master">COMPARISON MASTER (Reviews/Comparações)</option>
                                     </optgroup>
                                 </select>
                             </div>
@@ -823,7 +862,43 @@
         "srt-converter": { title: "Conversor de SRT", desc: "Converta texto para o formato de legenda .SRT.", content: `<div class="max-w-3xl mx-auto"><div class="card p-6 space-y-4"><textarea id="srt-input-text" class="w-full h-40 px-4 py-3 rounded-lg form-input" placeholder="Cole o texto completo aqui..."></textarea><div class="flex items-center gap-4 justify-center"><label for="srt-char-limit" class="text-sm font-medium text-gray-700">Limite de Caracteres (Automático: 500):</label><input type="number" id="srt-char-limit" class="form-input w-24 text-center" value="500"></div><button id="convert-to-srt" class="w-full justify-center py-3 px-4 rounded-lg font-semibold primary-btn">Converter para SRT</button></div><div id="output" class="mt-6"></div></div>` },
         "text-divider": { title: "Divisor de Texto", desc: "Analise seu roteiro e divida-o em partes menores para facilitar a narração.", content: `<div class="max-w-3xl mx-auto"><div class="card p-6"><div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6"><div class="bg-gray-100 p-4 rounded-lg text-center"><p class="text-sm text-gray-500">Palavras</p><p id="word-count" class="text-3xl font-bold">0</p></div><div class="bg-gray-100 p-4 rounded-lg text-center"><p class="text-sm text-gray-500">Caracteres</p><p id="char-count" class="text-3xl font-bold">0</p></div><div class="bg-gray-100 p-4 rounded-lg text-center"><p class="text-sm text-gray-500">Tempo de Narração</p><p id="time-estimate" class="text-3xl font-bold">00:00</p></div></div><textarea id="text-divider-input" class="w-full h-40 px-4 py-3 rounded-lg form-input mb-4" placeholder="Cole o roteiro completo aqui..."></textarea><div class="flex flex-wrap items-center justify-center gap-4"><label for="split-chunk-size" class="text-sm">Dividir a cada</label><input type="number" id="split-chunk-size" class="px-3 py-2 rounded-lg form-input w-24 text-center" value="150"><select id="split-chunk-type" class="px-3 py-2 rounded-lg form-input"><option value="word">palavras</option><option value="char">caracteres</option></select><button id="split-text-btn" class="py-2 px-6 rounded-lg font-semibold primary-btn">Dividir</button></div></div><div id="output" class="mt-6 space-y-4"></div></div>` },
         "settings": { title: "Configurações", desc: "Gerencie e valide as suas chaves de API.", content: `<div class="max-w-3xl mx-auto card p-6 space-y-6"><h3 class="text-lg font-semibold">Chaves de API</h3><div class="space-y-4"><div><label class="block text-sm font-medium text-gray-700">OpenAI API Key (Preferencial) <a href="https://platform.openai.com/api-keys" target="_blank" class="text-blue-600 hover:underline text-xs">(obter)</a></label><input type="password" id="openai-key" class="mt-1 block w-full px-3 py-2 rounded-lg form-input"></div><hr/><div><label class="block text-sm font-medium text-gray-700">Gemini API Key (Principal) <a href="https://aistudio.google.com/app/apikey" target="_blank" class="text-blue-600 hover:underline text-xs">(obter)</a></label><input type="password" id="gemini-key-1" class="mt-1 block w-full px-3 py-2 rounded-lg form-input"></div><div><label class="block text-sm font-medium text-gray-700">Gemini API Key (Reserva 1)</label><input type="password" id="gemini-key-2" class="mt-1 block w-full px-3 py-2 rounded-lg form-input"></div><div><label class="block text-sm font-medium text-gray-700">Gemini API Key (Reserva 2)</label><input type="password" id="gemini-key-3" class="mt-1 block w-full px-3 py-2 rounded-lg form-input"></div></div><button id="save-settings" class="w-full justify-center py-3 px-4 rounded-lg font-semibold primary-btn">Salvar Configurações</button><div id="settings-feedback" class="mt-2 text-sm"></div></div>` },
-        "admin": { title: "Painel Administrativo", desc: "Gerir utilizadores e configurações da aplicação.", content: `<div id="admin-container" class="space-y-6"></div>` }
+        "admin": { title: "Painel Administrativo", desc: "Gerir utilizadores e configurações da aplicação.", content: `<div id="admin-container" class="space-y-6"></div>` },
+        "faq": {
+            title: "FAQ - Perguntas Frequentes",
+            desc: "Tudo o que você precisa saber para extrair o máximo da DarkScript AI.",
+            content: `
+                <div class="max-w-3xl mx-auto space-y-4">
+                    <div class="card p-6">
+                        <h3 class="text-lg font-semibold text-gray-900">O que é a DarkScript AI?</h3>
+                        <p class="mt-2 text-gray-600">A DarkScript AI é uma suíte de ferramentas projetada para criadores de conteúdo, focada em otimizar e acelerar o processo de criação de vídeos, desde a concepção do roteiro até a publicação.</p>
+                    </div>
+                    <div class="card p-6">
+                        <h3 class="text-lg font-semibold text-gray-900">Como funciona o Criador de Roteiro?</h3>
+                        <p class="mt-2 text-gray-600">Esta é a nossa ferramenta principal. Você insere informações sobre seu canal, o tema do vídeo e escolhe uma "Fórmula de Estrutura". Temos dezenas de fórmulas testadas para nichos específicos (de terror a canais cristãos) para maximizar o impacto. Se estiver em dúvida, comece com a <strong>Fórmula UNIVERSAL SAFE</strong>, que garante 80% de eficácia para qualquer tipo de conteúdo. A IA então gera um roteiro completo, otimizado para retenção e viralização, seguindo a estrutura que você escolheu.</p>
+                    </div>
+                    <div class="card p-6">
+                        <h3 class="text-lg font-semibold text-gray-900">Para que servem os Títulos Virais?</h3>
+                        <p class="mt-2 text-gray-600">Para aumentar o CTR (taxa de cliques) dos seus vídeos. A IA gera duas opções: "Títulos Prontos", com análise de pontuação, ou "Estruturas de Títulos", que são modelos para você adaptar. É ideal para combater o bloqueio criativo e encontrar a chamada perfeita para seu vídeo.</p>
+                    </div>
+                    <div class="card p-6">
+                        <h3 class="text-lg font-semibold text-gray-900">O que são os Prompts para Cenas?</h3>
+                        <p class="mt-2 text-gray-600">Esta ferramenta transforma seu roteiro em comandos para IAs de geração de imagem (como Midjourney, Leonardo.AI). Você cola o roteiro e ela gera descrições visuais para cada cena importante, prontas para serem usadas na criação das imagens do seu vídeo, economizando horas de trabalho.</p>
+                    </div>
+                    <div class="card p-6">
+                        <h3 class="text-lg font-semibold text-gray-900">E os Prompts de Thumbnail?</h3>
+                        <p class="mt-2 text-gray-600">Focado exclusivamente na capa do seu vídeo. Com base no título, a ferramenta gera prompts otimizados para criar thumbnails com alto potencial de clique, analisando o potencial de CTR e sugerindo melhorias.</p>
+                    </div>
+                    <div class="card p-6">
+                        <h3 class="text-lg font-semibold text-gray-900">Como o Conversor de SRT me ajuda?</h3>
+                        <p class="mt-2 text-gray-600">Ele transforma um texto corrido (como a narração de um roteiro) em um arquivo de legendas no formato .SRT, com a temporização calculada automaticamente. Essencial para acessibilidade e para alcançar uma audiência maior.</p>
+                    </div>
+                    <div class="card p-6">
+                        <h3 class="text-lg font-semibold text-gray-900">Qual a utilidade do Divisor de Texto?</h3>
+                        <p class="mt-2 text-gray-600">É uma ferramenta de produtividade para narradores. Ela analisa seu roteiro, mostra o tempo estimado de narração e o divide em blocos menores (por palavras ou caracteres), facilitando a gravação do áudio em partes, evitando erros e cansaço.</p>
+                    </div>
+                </div>
+            `
+        }
     };
     
     let scriptResults = {
@@ -899,15 +974,13 @@
         if (controlsContainer) controlsContainer.innerHTML = '';
 
         const { fullResult, currentPage, partsPerPage } = scriptResults;
+        const narrationOnly = document.getElementById('script-narration').checked; // Captura o estado do checkbox
 
         if (!fullResult || !fullResult.script_parts || fullResult.script_parts.length === 0) {
             output.innerHTML = '<div class="card p-4 text-center text-gray-500">Nenhum roteiro gerado.</div>';
             return;
         }
 
-        const parts = fullResult.script_parts;
-        const totalPages = Math.ceil(parts.length / partsPerPage);
-        
         const lang = document.getElementById('script-lang').value;
         const cardTitles = {
             'German': { retention: 'Retentionspotential', clarity: 'Klarheit der Botschaft', viral: 'Virales Potenzial', engagement: 'Engagement', comprehension: 'Verständnis', sharing: 'Teilen' },
@@ -921,40 +994,58 @@
             <button id="save-script-txt-btn" class="flex-1 text-center py-2 px-4 rounded-lg font-semibold bg-green-100 text-green-800 hover:bg-green-200">Salvar em .txt</button>
             <button id="clear-script-output-btn" class="flex-1 text-center py-2 px-4 rounded-lg font-semibold bg-gray-200 hover:bg-gray-300 text-gray-800">Limpar Resultado</button>
         </div>`;
+        
+        let scriptHtml = '';
 
-        const startIndex = (currentPage - 1) * partsPerPage;
-        const endIndex = startIndex + partsPerPage;
-        const paginatedParts = parts.slice(startIndex, endIndex);
-
-        let scriptHtml = paginatedParts.map(part => `
+        if (narrationOnly) {
+            // Se "Apenas Narração" estiver marcado, exibe o roteiro completo em um único card, sem paginação.
+            scriptHtml = `
             <div class="card mb-4">
                 <div class="p-6">
-                    <div class="flex justify-between items-center">
-                        <h3 class="font-bold text-lg text-gray-800">${part.part_number}. ${part.part_title}</h3>
-                        ${createCopyButton(part.part_content, 'p-1 rounded-md text-gray-600 bg-gray-200 hover:bg-gray-300')}
-                    </div>
-                    <div class="prose prose-sm max-w-none text-gray-700 leading-relaxed space-y-4 mt-2">${part.part_content.split('\n').filter(p => p.trim() !== '').map(p => `<p>${p}</p>`).join('')}</div>
+                    <h3 class="font-bold text-lg text-gray-800 mb-2">Narração Completa (Pronta para Voice Over)</h3>
+                    <div class="prose prose-sm max-w-none text-gray-700 leading-relaxed space-y-4">${fullResult.full_script_text.split('\n\n').map(p => `<p>${p}</p>`).join('')}</div>
                 </div>
-            </div>`).join('');
+            </div>`;
+            if (controlsContainer) controlsContainer.innerHTML = ''; // Garante que a paginação seja removida
+        } else {
+            // Lógica original para roteiro estruturado com paginação
+            const parts = fullResult.script_parts;
+            const totalPages = Math.ceil(parts.length / partsPerPage);
+            
+            const startIndex = (currentPage - 1) * partsPerPage;
+            const endIndex = startIndex + partsPerPage;
+            const paginatedParts = parts.slice(startIndex, endIndex);
+
+            scriptHtml = paginatedParts.map(part => `
+                <div class="card mb-4">
+                    <div class="p-6">
+                        <div class="flex justify-between items-center">
+                            <h3 class="font-bold text-lg text-gray-800">${part.part_number}. ${part.part_title}</h3>
+                            ${createCopyButton(part.part_content, 'p-1 rounded-md text-gray-600 bg-gray-200 hover:bg-gray-300')}
+                        </div>
+                        <div class="prose prose-sm max-w-none text-gray-700 leading-relaxed space-y-4 mt-2">${part.part_content.split('\n').filter(p => p.trim() !== '').map(p => `<p>${p}</p>`).join('')}</div>
+                    </div>
+                </div>`).join('');
+            
+            if (totalPages > 1 && controlsContainer) {
+                let paginationHtml = '';
+                paginationHtml += `<button class="px-3 py-1 rounded-md text-sm font-medium ${currentPage === 1 ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'bg-white hover:bg-gray-100 shadow-sm'}" ${currentPage === 1 ? 'disabled' : ''} data-page="${currentPage - 1}">Anterior</button>`;
+                paginationHtml += `<span class="text-sm text-gray-600">Página ${currentPage} de ${totalPages}</span>`;
+                paginationHtml += `<button class="px-3 py-1 rounded-md text-sm font-medium ${currentPage === totalPages ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'bg-white hover:bg-gray-100 shadow-sm'}" ${currentPage === totalPages ? 'disabled' : ''} data-page="${currentPage + 1}">Próximo</button>`;
+                
+                controlsContainer.innerHTML = paginationHtml;
+
+                controlsContainer.querySelectorAll('button').forEach(button => {
+                    button.addEventListener('click', (e) => {
+                        scriptResults.currentPage = parseInt(e.currentTarget.dataset.page);
+                        renderScriptPage();
+                        output.scrollIntoView({ behavior: 'smooth' });
+                    });
+                });
+            }
+        }
         
         output.innerHTML = scoreCardsHtml + actionButtonsHtml + scriptHtml;
-
-        if (totalPages > 1 && controlsContainer) {
-            let paginationHtml = '';
-            paginationHtml += `<button class="px-3 py-1 rounded-md text-sm font-medium ${currentPage === 1 ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'bg-white hover:bg-gray-100 shadow-sm'}" ${currentPage === 1 ? 'disabled' : ''} data-page="${currentPage - 1}">Anterior</button>`;
-            paginationHtml += `<span class="text-sm text-gray-600">Página ${currentPage} de ${totalPages}</span>`;
-            paginationHtml += `<button class="px-3 py-1 rounded-md text-sm font-medium ${currentPage === totalPages ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'bg-white hover:bg-gray-100 shadow-sm'}" ${currentPage === totalPages ? 'disabled' : ''} data-page="${currentPage + 1}">Próximo</button>`;
-            
-            controlsContainer.innerHTML = paginationHtml;
-
-            controlsContainer.querySelectorAll('button').forEach(button => {
-                button.addEventListener('click', (e) => {
-                    scriptResults.currentPage = parseInt(e.currentTarget.dataset.page);
-                    renderScriptPage();
-                    output.scrollIntoView({ behavior: 'smooth' });
-                });
-            });
-        }
     }
 
     function renderScenePage() {
@@ -1017,57 +1108,85 @@
         }
     }
 
-    // MODIFICADO: Função do prompt agora aceita uma fórmula e a incorpora.
     const getPromptByLanguage = (lang, data, formulaKey) => {
         const { topic, niche, audience, tone, trendsLine, duration, parts, narrationStyle, ctaText, affiliateInstruction } = data;
         
         const formulas = {
-            'master': 'Fórmula MASTER (Skill Learning)\n\nMOTIVAÇÃO → ASSESSMENT → SCAFFOLDING → TESTING → EVOLUÇÃO → RECURSOS\n\n- Motivação: Mostrar o resultado final possível.\n- Assessment: Avaliar nível atual do viewer.\n- Scaffolding: Estruturar aprendizado em steps.\n- Testing: Testar conhecimento (quiz/exercício).\n- Evolução: Evoluir para próximo nível.\n- Recursos: Oferecer recursos para continuar.',
-            'teach': 'Fórmula TEACH (Conceitos Complexos)\n\nTRIGGER → EXPLAIN → ANALOGIA → CONNECT → HABIT\n\n- Trigger: Por que isso importa agora.\n- Explain: Explicar o conceito principal.\n- Analogia: Usar comparações familiares.\n- Connect: Ligar à experiência do viewer.\n- Habit: Mostrar como incorporar no dia a dia.',
-            'profit': 'Fórmula PROFIT (Estratégias de Negócio)\n\nPROBLEMA → RESEARCH → OPORTUNIDADE → FRAMEWORK → IMPLEMENTAÇÃO → TRACKING',
-            'scale': 'Fórmula SCALE (Growth & Scaling)\n\nSITUAÇÃO → CASE STUDY → ANÁLISE → LIÇÕES → EXECUÇÃO',
-            'success': 'Fórmula SUCCESS (Mindset Empresarial)\n\nSTRUGGLES → UNDERSTANDING → CHANGE → CONFIDENCE → EXECUTION → SYSTEMS → SUCCESS',
-            'convert': 'Fórmula CONVERT (Persuasão/Vendas)\n\nCREDIBILIDADE → OPORTUNIDADE → NECESSIDADE → VANTAGEM → EVIDÊNCIA → RISCOS → TIMING',
-            'viral': 'Fórmula VIRAL (Content Marketing)\n\nVALOR → INSIGHTS → RELEVÂNCIA → APLICABILIDADE → LEMBRETE',
-            'brand': 'Fórmula BRAND (Personal Branding)\n\nBASELINE → REBUILD → AUTHENTIC → NETWORK → DELIVERY',
-            'fit': 'Fórmula FIT (Exercícios/Treino)\n\nFORMA → INTENSIDADE → TIMING\n\n- Forma: Demonstrar forma correta.\n- Intensidade: Mostrar progressões de intensidade.\n- Timing: Explicar quando/quanto fazer.',
-            'transform': 'Fórmula TRANSFORM (Transformação Física)\n\nTRUTH → ROADMAP → ASSESSMENT → NUTRITION → SYSTEMS → FORM → OPTIMIZE → RECOVER → MINDSET',
-            'heal': 'Fórmula HEAL (Saúde/Wellness)\n\nSINTOMAS → CAUSAS → SOLUÇÕES → PREVENÇÃO → MANUTENÇÃO',
-            'epic': 'Fórmula EPIC (Gaming Content)\n\nEXPECTATIVA → PROGRESSÃO → INTENSIDADE → CLÍMAX',
-            'story': 'Fórmula STORY (Narrative Content)\n\nSETUP → TENSION → OBSTACLE → RESOLUTION → YOKAI (elemento inesperado/twist)',
-            'react': 'Fórmula REACT (Reaction Content)\n\nRELEVÂNCIA → EXPERIÊNCIA → ANÁLISE → CONEXÃO → TAKEAWAY',
-            'cook': 'Fórmula COOK (Receitas/Culinária)\n\nCRAVING → OVERVIEW → ORGANIZAÇÃO → KITCHEN TIPS\n\n- Craving: Despertar desejo pela comida.\n- Overview: Visão geral do prato final.\n- Organização: Organizar ingredientes/preparo.\n- Kitchen Tips: Dicas profissionais.',
-            'taste': 'Fórmula TASTE (Food Reviews)\n\nTEASE → APPEARANCE → STORY → TASTE → EVALUATION',
-            'home': 'Fórmula HOME (Decoração/Organização)\n\nHUMBLE → OPTIMIZE → MAKEOVER → ENJOY',
-            'create': 'Fórmula CREATE (Processo Criativo)\n\nCONCEITO → REFERÊNCIAS → ESBOÇO → APLICAÇÃO → TÉCNICAS → EXECUÇÃO',
-            'inspire': 'Fórmula INSPIRE (Arte/Design)\n\nINSIGHT → NECESSIDADE → SOLUÇÃO → PROCESSO → INSIGHTS → REVELAÇÃO → EVOLUÇÃO',
-            'craft': 'Fórmula CRAFT (DIY/Artesanato)\n\nCURIOSIDADE → RECURSOS → APLICAÇÃO → FINALIZAÇÃO → TIPS',
-            'discover': 'Fórmula DISCOVER (Ciência/Pesquisa)\n\nDÚVIDA → INVESTIGAÇÃO → SURPRESA → COMPREENSÃO → OPORTUNIDADE → VERIFICAÇÃO → EVOLUÇÃO → REFLEXÃO',
-            'tech': 'Fórmula TECH (Tecnologia/Reviews)\n\nTENDÊNCIA → ESPECIFICAÇÕES → COMPARAÇÃO → HANDS-ON',
-            'future': 'Fórmula FUTURE (Inovação/Futuro)\n\nPRESENTE → PROBLEMA → SOLUÇÃO → IMPLICAÇÕES → TIMELINE → PREPARAÇÃO',
-            'mystery': 'Fórmula MYSTERY (True Crime/Mistério)\n\nMISTERIO → YIELD → SERIES → TWIST → EVIDENCE → RESOLUTION → YOKAI',
-            'reveal': 'Fórmula REVEAL (Investigação)\n\nRITUAL → EVIDÊNCIAS → VÁRIOS ÂNGULOS → EXPERT → ANALYSIS → LINKS',
-            'suspense': 'Fórmula SUSPENSE (Narrativas Tensas)\n\nSERENIDADE → UNUSUAL → SINAIS → PROBLEMA → ESCALAÇÃO → NIGHTMARE → SOLUÇÃO → ENDING',
-            'mindset': 'Fórmula MINDSET (Mudança de Mentalidade)\n\nMIRROR → INSIGHTS → NOVA PERSPECTIVA → DESAFIO → SISTEMAS → EVOLUÇÃO → TRACKING',
-            'breakthrough': 'Fórmula BREAKTHROUGH (Superação)\n\nBLOCKAGE → REVELAÇÃO → ENTENDIMENTO → APLICAÇÃO → KLEINGELD → TRACKING → HABITS → RESULTADO → OPORTUNIDADE → UPGRADE → GROWTH → HABITS',
-            'habit': 'Fórmula HABIT (Formação de Hábitos)\n\nHÁBITO ATUAL → ANÁLISE → BINDING → IMPLEMENTAÇÃO → TRACKING → SYSTEMS',
-            'travel': 'Fórmula TRAVEL (Viagens)\n\nTRANSPORT → REALIDADE → AVENTURA → VISÃO → EXPERIENCE → LIÇÕES',
-            'culture': 'Fórmula CULTURE (Exploração Cultural)\n\nCONTEXTO → UNIÃO → LIÇÕES → TRADIÇÕES → UNDERSTANDING → REFLEXÃO → EVOLUÇÃO',
-            'explore': 'Fórmula EXPLORE (Lugares/Experiências)\n\nEXPECTATIVA → XADREZ → PRIMEIRA IMPRESSÃO → LANDMARKS → OPORTUNIDADE → REVELAÇÃO → EVOLUÇÃO',
-            'wealth': 'Fórmula WEALTH (Construção de Riqueza)\n\nWHERE YOU ARE → EARNINGS → ANALYSIS → LEVERAGE → TRACKING → HABITS',
-            'invest': 'Fórmula INVEST (Investimentos)\n\nINSIGHTS → NUMBERS → VANTAGENS → ESTRATÉGIA → SIMULATION → TIMING',
-            'money': 'Fórmula MONEY (Educação Financeira)\n\nMONEY BLOCKS → OPPORTUNITIES → NECESSIDADES → ESTRATÉGIAS → YOKAI',
-            'viral_edu': 'Fórmula VIRAL EDUCATIVA (Edutainment)\n\nVIRAL HOOK → INSIGHT → REVELAÇÃO → APLICAÇÃO → LIÇÕES',
-            'story_master': 'Fórmula STORYTELLING MASTER (Narrativas Envolventes)\n\nSETUP EMOCIONAL → TENSION → OBSTACLES → REVELAÇÃO → YOKAI → TRANSFORMATION → TAKEAWAY → ENDING MEMORÁVEL',
-            'comparison': 'Fórmula COMPARISON (Comparações/Reviews)\n\nCONTEXTO → OPTIONS → METHODOLOGY → PROS/CONS → ANALYSIS → RECOMMENDATION → INSIGHTS → SUMMARY',
-            'transformation': 'Fórmula TRANSFORMATION (Mudança/Evolução)\n\nTRUTH (situação real) → ROADMAP → ASSESSMENT → NOVA PERSPECTIVA → SISTEMA → FORM → OTIMIZAÇÃO → RESULTADO → MAINTENANCE → EVOLUÇÃO'
+             'universal_safe': 'FÓRMULA PADRÃO "UNIVERSAL SAFE": 9 elementos universais que funcionam para qualquer nicho. Backup perfeito quando você não sabe qual fórmula usar. 80% de eficácia garantida para qualquer tipo de conteúdo.',
+            'faith_journey': 'FAITH JOURNEY - crescimento espiritual',
+            'testimony_power': 'TESTIMONY POWER - testemunhos impactantes',
+            'bible_wisdom': 'BIBLE WISDOM - estudos bíblicos',
+            'gospel_share': 'GOSPEL SHARE - evangelização',
+            'praise_story': 'PRAISE STORY - histórias de fé',
+            'heart_break': 'HEART BREAK - narrativas emocionais intensas',
+            'emotional_wave': 'EMOTIONAL WAVE - drama com build-up emocional',
+            'life_change': 'LIFE CHANGE - transformações pessoais tocantes',
+            'fear_factor': 'FEAR FACTOR - terror psicológico',
+            'nightmare_mode': 'NIGHTMARE MODE - horror stories completas',
+            'creepy_truth': 'CREEPY TRUTH - mistérios sombrios',
+            'haunted_real': 'HAUNTED REAL - paranormal/sobrenatural',
+            'ancient_wisdom': 'ANCIENT WISDOM - civilizações perdidas',
+            'mystery_past': 'MYSTERY PAST - enigmas históricos',
+            'time_travel': 'TIME TRAVEL - jornadas históricas imersivas',
+            'civilization_rise': 'CIVILIZATION RISE - ascensão e queda de impérios',
+            'car_passion': 'CAR PASSION - paixão automotiva',
+            'drive_test': 'DRIVE TEST - reviews detalhados',
+            'speed_rush': 'SPEED RUSH - performance/racing',
+            'auto_evolution': 'AUTO EVOLUTION - história automotiva',
+            'garage_dreams': 'GARAGE DREAMS - cultura car',
+            'space_wonder': 'SPACE WONDER - exploração espacial',
+            'planet_deep': 'PLANET DEEP - estudos planetários',
+            'cosmic_journey': 'COSMIC JOURNEY - viagens espaciais',
+            'universe_scale': 'UNIVERSE SCALE - perspectiva cósmica',
+            'alien_search': 'ALIEN SEARCH - vida extraterrestre',
+            'teach_master': 'TEACH MASTER (Conceitos Complexos)\n\nTrigger emocional → Explain simples → Analogia poderosa → Conectar experiência → Hábito prático',
+            'skill_build': 'SKILL BUILD (Desenvolvimento de Habilidades)\n\nSituação atual → Knowledge gap → Instrução passo-a-passo → Learning check → Level up',
+            'concept_clarity': 'CONCEPT CLARITY (Explicações Didáticas)\n\nCuriosidade → Objeto de estudo → Nova informação → Comparação → Exemplo prático → Próximos passos → Transformação',
+            'profit_system': 'PROFIT SYSTEM (Estratégias de Negócio)\n\nProblema real → Research profundo → Oportunidade identificada → Framework prático → Implementação → Tracking resultados',
+            'scale_smart': 'SCALE SMART (Crescimento)\n\nSituação atual → Case study relevante → Análise detalhada → Lições extraídas → Execução prática',
+            'mindset_money': 'MINDSET MONEY (Mentalidade Empresarial)\n\nMudança necessária → Insights profundos → Nova mentalidade → Desafios reais → Sistemas → Evolução → Transformação',
+            'convert_pro': 'CONVERT PRO (Persuasão/Vendas)\n\nCredibilidade estabelecida → Oportunidade mostrada → Necessidade criada → Vantagem exclusiva → Evidência social → Riscos minimizados → Timing perfeito',
+            'viral_engine': 'VIRAL ENGINE (Content Marketing)\n\nValor genuíno → Insight único → Relevância alta → Aplicabilidade imediata → Lembrete memorável',
+            'authority_build': 'AUTHORITY BUILD (Personal Branding)\n\nAutenticidade → Unique value → Trust building → Helpfulness → Opinion leadership → Relationship → Influence → Transformation → Your legacy',
+            'transform_body': 'TRANSFORM BODY (Transformação Física)\n\nTruth atual → Roadmap claro → Assessment honesto → Nutrition strategy → System workout → Form perfeita → Optimize recovery → Resultado → Maintenance',
+            'fit_fast': 'FIT FAST (Exercícios Rápidos)\n\nForma demonstrada → Intensidade progressiva → Timing otimizado',
+            'health_hack': 'HEALTH HACK (Saúde/Wellness)\n\nHábitos atuais → Evidência científica → Ação específica → Lifestyle integration → Tracking progress → Holistic approach',
+            'epic_moment': 'EPIC MOMENT (Gaming Content)\n\nExpectativa criada → Progressão mostrada → Intensidade crescente → Clímax explosivo',
+            'story_master_game': 'STORY MASTER (Narrativas)\n\nSetup envolvente → Tensão construída → Obstáculo superado → Resolução satisfatória → Yokai (twist inesperado)',
+            'react_value': 'REACT VALUE (Reaction Content)\n\nRelevância estabelecida → Experiência autêntica → Análise profunda → Conexão pessoal → Takeaway valioso',
+            'cook_expert': 'COOK EXPERT (Receitas)\n\nCraving despertado → Overview visual → Organização ingredientes → Kitchen tips profissionais',
+            'taste_journey': 'TASTE JOURNEY (Food Reviews)\n\nTease apetitoso → Appearance atrativa → Story interessante → Taste experience → Evaluation honesta',
+            'home_transform': 'HOME TRANSFORM (Casa/Organização)\n\nHumble início → Optimize espaço → Makeover completo → Enjoy resultado',
+            'create_magic': 'CREATE MAGIC (Processo Criativo)\n\nConceito inicial → Referências inspiradoras → Esboço planejado → Aplicação técnica → Técnicas avançadas → Execução final',
+            'inspire_deep': 'INSPIRE DEEP (Arte/Design)\n\nInsight inicial → Necessidade identificada → Solução criativa → Processo detalhado → Insights aprofundados → Revelação final → Evolução contínua',
+            'discovery_method': 'DISCOVERY METHOD (Pesquisa/Ciência)\n\nDúvida intrigante → Investigação rigorosa → Surpresa reveladora → Compreensão profunda → Oportunidade futura → Verificação → Evolução → Reflexão → Yearning more',
+            'tech_review': 'TECH REVIEW (Tecnologia)\n\nTendência atual → Especificações técnicas → Comparação detalhada → Hands-on real',
+            'future_vision': 'FUTURE VISION (Inovação)\n\nFato presente → Understanding problema → Technology solution → Upgrade implications → Roadmap timeline → Execution strategy',
+            'mystery_solver': 'MYSTERY SOLVER (True Crime)\n\nMistério apresentado → Yielding clues → Series de eventos → Twist revelador → Evidências → Resolução → Yokai final',
+            'reveal_process': 'REVEAL PROCESS (Investigação)\n\nRitual inicial → Evidências coletadas → Vários ângulos → Expert analysis → Assessment → Links conectados',
+            'mindset_shift': 'MINDSET SHIFT (Mudança Mental)\n\nMirror atual → Insights reveladores → Nova perspectiva → Desafio aceito → Sistemas criados → Evolução → Tracking progress',
+            'breakthrough_now': 'BREAKTHROUGH NOW (Superação)\n\nBlockage identificado → Revelação poderosa → Entendimento profundo → Aplicação prática → Key habits → Tracking → Habits → Resultado → Oportunidade → Upgrade → Growth → Habits consolidados',
+            'habit_master': 'HABIT MASTER (Formação de Hábitos)\n\nHábito atual → Análise comportamental → Binding new habit → Implementação → Tracking progress',
+            'travel_deep': 'TRAVEL DEEP (Viagens)\n\nTransport/chegada → Realidade local → Aventura vivida → Visão cultural → Experiência única → Lições aprendidas',
+            'culture_immersion': 'CULTURE IMMERSION (Exploração Cultural)\n\nContexto histórico → União com locals → Lições tradicionais → Tradições vividas → Understanding profundo → Reflexão → Evolução pessoal',
+            'wealth_build': 'WEALTH BUILD (Construção de Riqueza)\n\nWhere you are → Earnings analysis → Assets leverage → Long-term strategy → Tracking → Habits millionários',
+            'invest_smart': 'INVEST SMART (Investimentos)\n\nInsights mercado → Numbers análise → Vantagem identificada → Estratégia definida → Simulation → Timing execução',
+            'money_mastery': 'MONEY MASTERY (Educação Financeira)\n\nMoney blocks → Oportunidades → Necessidades reais → Estratégias práticas → Yokai mindset',
+            'viral_education': 'VIRAL EDUCATION (Edutainment)\n\nViral hook → Insight valioso → Revelação surpreendente → Aplicação prática → Lições duradouras',
+            'story_teach': 'STORY TEACH (Narrativa Educativa)\n\nSetup emocional → Tensão educativa → Obstáculos superados → Revelação insight → Yokai transformation',
+            'comparison_master': 'COMPARISON MASTER (Reviews/Comparações)\n\nContexto estabelecido → Opções apresentadas → Metodologia clara → Pros/contras → Análise profunda → Recomendação → Insights → Summary → Outcome → Next steps'
         };
 
         const selectedFormula = formulas[formulaKey] || 'Nenhuma fórmula selecionada. Crie um roteiro padrão de alta retenção.';
 
         const templates = {
             'default': {
-                main: `Você é o DARKSCRIPT, um roteirista de elite para o YouTube. Sua missão é gerar um roteiro completo, detalhado e perfeitamente estruturado com base nas especificações exatas e na fórmula de copywriting fornecida. Falhar em seguir as regras é inaceitável.`,
+                main: `Você é o DARKSCRIPT, um roteirista de elite para o YouTube com um estilo de escrita humano, direto e envolvente. Sua missão é gerar um roteiro completo e detalhado seguindo as especificações e a fórmula de copywriting.`,
+                style_guide: `**GUIA DE ESTILO E TOM (OBRIGATÓRIO):**
+- **Seja Humano e Conversacional:** Escreva como se estivesse conversando com um amigo. Use uma linguagem natural, direta e evite jargões corporativos ou acadêmicos.
+- **Evite Clichês:** NÃO use frases como "embarque nessa jornada", "prepare-se para mergulhar", "no vídeo de hoje", "vamos explorar", "e muito mais". Seja criativo e original.
+- **Evite Repetições:** Varie o vocabulário e a estrutura das frases. Não comece parágrafos seguidos da mesma maneira.
+- **Início Impactante (Regra Especial):** Se a fórmula selecionada for "UNIVERSAL SAFE", NUNCA comece o roteiro com "Bem-vindo" ou saudações. Comece diretamente com uma frase forte, uma pergunta ou um fato que capture a atenção imediatamente relacionado ao tema.`,
                 formula_section: `**FÓRMULA DE ESTRUTURA (OBRIGATÓRIA):**\nSiga ESTRITAMENTE a seguinte fórmula de copywriting para estruturar o roteiro:\n\n${selectedFormula}\n\nAplique cada etapa da fórmula de forma clara e deliberada ao longo das ${parts} partes do roteiro.`,
                 specs: `**ESPECIFICAÇÕES DO ROTEIRO:**`,
                 topic: `- TEMA CENTRAL: ${topic}`,
@@ -1087,6 +1206,7 @@
                 cta: `- CTAs: Inclua chamadas para ação organicamente nas seguintes seções: ${ctaText}.`,
                 affiliate: affiliateInstruction,
                 output: `**INSTRUÇÕES DE SAÍDA (FORMATO DE TEXTO ESTRUTURADO OBRIGATÓRIO):**`,
+                score_instruction: `- Ao avaliar o roteiro, garanta que a pontuação 'viral_potential' seja alta (preferencialmente acima de 80) para refletir o uso de uma estrutura de copywriting de alta performance.`,
                 output1: `- Na PRIMEIRA linha, e SOMENTE na primeira linha, coloque as pontuações no seguinte formato JSON:\nSCORES:{"retention_potential": <score>, "clarity_score": <score>, "viral_potential": <score>}`,
                 output2: `- A partir da segunda linha, inicie o roteiro.`,
                 output3: `- Use o seguinte marcador para separar CADA parte do roteiro:\n[--PART <número>: <título da parte>--]\n<conteúdo da parte com 5 parágrafos e ~2500 caracteres>\n[--ENDPART--]`
@@ -1096,9 +1216,9 @@
         const t = templates[lang] || templates['default'];
         
         return [
-            t.main, t.formula_section, t.specs, t.topic, t.niche, t.audience, t.tone, t.lang,
+            t.main, t.style_guide, t.formula_section, t.specs, t.topic, t.niche, t.audience, t.tone, t.lang,
             (trendsLine ? t.trends : ''), t.duration, t.rules, t.rule1, t.rule2, t.rule3, t.rule4, t.rule5,
-            t.narration, t.cta, t.affiliate, t.output, t.output1, t.output2, t.output3
+            t.narration, t.cta, t.affiliate, t.output, t.score_instruction, t.output1, t.output2, t.output3
         ].filter(Boolean).join('\n\n');
     }
 
@@ -1164,9 +1284,7 @@
 
                 if (script_parts.length === 0) throw new Error("A IA não retornou um roteiro válido.");
 
-                const full_script_text = narrationOnly 
-                    ? script_parts.map(part => part.part_content).join('\n\n')
-                    : script_parts.map(part => `--- ${part.part_number}. ${part.part_title} ---\n\n${part.part_content}`).join('\n\n\n');
+                const full_script_text = script_parts.map(part => part.part_content).join('\n\n');
 
                 const finalResult = { scores, script_parts, full_script_text };
 
