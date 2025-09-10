@@ -16,6 +16,12 @@
             color: #1f2937;
         }
         .font-premium { font-family: 'Poppins', sans-serif; }
+        .allow-copy {
+            -webkit-user-select: text; /* Safari */
+            -moz-user-select: text; /* Firefox */
+            -ms-user-select: text; /* IE 10+ */
+            user-select: text; /* Standard syntax */
+        }
         .no-copy {
             -webkit-user-select: none; /* Safari */
             -moz-user-select: none; /* Firefox */
@@ -127,7 +133,7 @@
         input:checked + .slider { background-color: #2563eb; }
         input:focus + .slider { box-shadow: 0 0 1px #2563eb; }
         input:checked + .slider:before { transform: translateX(26px); }
-
+        
         @media (max-width: 768px) {
             #app-container { flex-direction: column; }
             #sidebar { 
@@ -168,8 +174,7 @@
         <div class="w-full max-w-md p-8 space-y-4 text-center rounded-xl auth-container">
             <h2 class="text-2xl font-bold text-gray-900">Ativação Pendente</h2>
             <p class="text-gray-600">A sua conta foi registada com sucesso, mas precisa de ser ativada por um administrador.</p>
-            <p class="text-sm text-gray-500">Pode fechar esta página. Será notificado por e-mail quando a sua conta for ativada.</p>
-            <button id="back-to-login" class="text-sm secondary-link font-medium">Voltar para o Login</button>
+            <button id="back-to-login" class="text-sm secondary-link font-medium mt-4">Voltar para o Login</button>
         </div>
     </div>
 
@@ -200,7 +205,11 @@
             <div id="register-container" class="p-8 space-y-6 rounded-xl auth-container" style="display: none;">
                 <form id="register-form" class="space-y-6">
                     <div id="register-feedback" class="text-red-500 text-sm text-center min-h-[20px]"></div>
-                    <input id="register-email" type="email" required class="w-full px-4 py-3 rounded-lg form-input" placeholder="Seu melhor e-mail">
+                    <div>
+                        <input id="register-email" type="email" required class="w-full px-4 py-3 rounded-lg form-input" placeholder="Seu melhor e-mail">
+                        <p class="text-xs text-center text-gray-500 mt-1">Use o mesmo e-mail da sua compra.</p>
+                    </div>
+                    <input id="register-whatsapp" type="tel" required class="w-full px-4 py-3 rounded-lg form-input" placeholder="Seu WhatsApp (com DDD)">
                     <input id="register-password" type="password" required class="w-full px-4 py-3 rounded-lg form-input" placeholder="Crie uma senha forte">
                     <button type="submit" class="w-full justify-center py-3 px-4 rounded-lg font-semibold primary-btn">Criar Conta</button>
                 </form>
@@ -273,6 +282,73 @@
         </svg>
         <span id="success-toast-message"></span>
     </div>
+
+    <!-- API Key Alert Modal -->
+    <div id="api-alert-modal" style="display: none;" class="fixed inset-0 bg-gray-900/80 backdrop-blur-sm z-[9997] flex items-center justify-center p-4">
+        <div class="bg-white p-8 rounded-lg shadow-xl w-full max-w-md text-center">
+            <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-yellow-100 mb-4">
+                <svg class="h-6 w-6 text-yellow-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
+                </svg>
+            </div>
+            <h3 class="text-lg font-bold text-gray-900">Ação Necessária</h3>
+            <p class="text-gray-600 my-2">Nenhuma chave de API foi encontrada. A plataforma precisa de pelo menos uma chave (OpenAI ou Gemini) para funcionar.</p>
+            <p class="text-xs text-gray-500 mb-6">Este aviso só aparecerá uma vez por sessão.</p>
+            <div class="flex justify-center gap-4">
+                <button id="close-api-alert-btn" class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-2 px-6 rounded-lg">Fechar</button>
+                <button id="go-to-settings-btn" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded-lg">Configurar API</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- WhatsApp Update Modal -->
+    <div id="whatsapp-update-modal" style="display: none;" class="fixed inset-0 bg-gray-900/80 backdrop-blur-sm z-[9999] flex items-center justify-center p-4">
+        <div class="bg-white p-8 rounded-lg shadow-xl w-full max-w-sm text-center">
+            <div id="whatsapp-form-container">
+                <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-blue-100 mb-4">
+                    <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v4l-4-4H9a2 2 0 01-2-2V7a2 2 0 012-2h2.586a1 1 0 01.707.293l2.414 2.414a1 1 0 01.293.707V8z"></path></svg>
+                </div>
+                <h3 class="text-lg font-bold text-gray-900">Atualize seu Contato</h3>
+                <p class="text-gray-600 my-2">Para garantir o melhor suporte e acesso a novidades, por favor, confirme seu número de WhatsApp.</p>
+                <form id="whatsapp-update-form" class="mt-4 space-y-4">
+                    <input id="update-whatsapp-input" type="tel" required class="w-full px-4 py-3 rounded-lg form-input" placeholder="Seu WhatsApp (com DDD)">
+                    <div id="whatsapp-update-feedback" class="text-red-500 text-sm text-center min-h-[20px]"></div>
+                    <button type="submit" class="w-full justify-center py-3 px-4 rounded-lg font-semibold primary-btn">Salvar e Continuar</button>
+                </form>
+            </div>
+            <div id="whatsapp-success-container" style="display: none;">
+                 <div class="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-green-100 mb-4">
+                     <svg class="h-10 w-10 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                    </svg>
+                 </div>
+                <h2 class="text-2xl font-bold text-gray-800">DarkScript Liberado!</h2>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit User Modal -->
+    <div id="edit-user-modal" style="display: none;" class="fixed inset-0 bg-gray-900/80 backdrop-blur-sm z-[9998] flex items-center justify-center p-4">
+        <div class="bg-white p-8 rounded-lg shadow-xl w-full max-w-md">
+            <h3 class="text-lg font-bold text-gray-900 mb-4">Editar Utilizador</h3>
+            <form id="edit-user-form" class="space-y-4">
+                <input type="hidden" id="edit-user-id">
+                <div>
+                    <label for="edit-user-email" class="block text-sm font-medium text-gray-700">Email</label>
+                    <input id="edit-user-email" type="email" required class="mt-1 w-full px-4 py-3 rounded-lg form-input">
+                </div>
+                <div>
+                    <label for="edit-user-whatsapp" class="block text-sm font-medium text-gray-700">WhatsApp</label>
+                    <input id="edit-user-whatsapp" type="tel" class="mt-1 w-full px-4 py-3 rounded-lg form-input">
+                </div>
+                <div id="edit-user-feedback" class="text-red-500 text-sm text-center min-h-[20px]"></div>
+                <div class="flex justify-end gap-4 mt-6">
+                    <button id="cancel-edit-btn" type="button" class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-2 px-6 rounded-lg">Cancelar</button>
+                    <button id="save-edit-btn" type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded-lg">Salvar Alterações</button>
+                </div>
+            </form>
+        </div>
+    </div>
     
     <script>
     // --- Global State Management ---
@@ -284,7 +360,7 @@
         },
         progressInterval: null,
         phraseInterval: null,
-        toastTimeout: null
+        toastTimeout: null,
     };
     
     // --- Utility Functions ---
@@ -443,20 +519,32 @@
 
     async function handleRegister(e) {
         e.preventDefault();
-        document.getElementById('register-feedback').textContent = '';
+        const feedbackEl = document.getElementById('register-feedback');
+        feedbackEl.textContent = '';
         const email = document.getElementById('register-email').value;
+        const whatsapp = document.getElementById('register-whatsapp').value;
         const password = document.getElementById('register-password').value;
+
+        const whatsappRegex = /^\+?[1-9]\d{1,14}$/;
+        const cleanedWhatsapp = whatsapp.replace(/\D/g, ''); 
+
+        if (!whatsappRegex.test(cleanedWhatsapp) || cleanedWhatsapp.length < 10) {
+            feedbackEl.textContent = 'Por favor, insira um número de WhatsApp válido.';
+            return;
+        }
+        
         try {
-            await apiRequest('/api/register', 'POST', { email, password });
+            await apiRequest('/api/register', 'POST', { email, password, whatsapp });
             showScreen('activation-container');
         } catch (error)
         {
-            document.getElementById('register-feedback').textContent = error.message;
+            feedbackEl.textContent = error.message;
         }
     }
     
     function handleLogout() {
         localStorage.removeItem('authToken');
+        sessionStorage.removeItem('apiAlertShown');
         appState.currentUser = null;
         showScreen('auth-section');
         document.getElementById('login-form').reset();
@@ -512,7 +600,10 @@
             addToLog('Ação desativada para proteger o conteúdo.', true);
         });
         document.addEventListener('keydown', e => {
-            if (e.ctrlKey && ['c', 'u', 's'].includes(e.key.toLowerCase())) {
+            if (e.ctrlKey && (e.key.toLowerCase() === 'c' || e.key.toLowerCase() === 'v')) {
+                return;
+            }
+            if (e.ctrlKey && ['u', 's', 'a', 'x'].includes(e.key.toLowerCase())) {
                 e.preventDefault();
                 addToLog('Ação desativada para proteger o conteúdo.', true);
             }
@@ -522,6 +613,71 @@
             }
         });
     }
+    
+    // --- API Alert ---
+    async function checkAndShowApiAlert() {
+        if (sessionStorage.getItem('apiAlertShown')) {
+            return;
+        }
+        try {
+            const settings = await apiRequest('/api/settings', 'GET');
+            const hasOpenAI = settings.openai && settings.openai.trim() !== '';
+            const hasGemini = Array.isArray(settings.gemini) && settings.gemini.some(key => key && key.trim() !== '');
+            
+            if (!hasOpenAI && !hasGemini) {
+                document.getElementById('api-alert-modal').style.display = 'flex';
+                sessionStorage.setItem('apiAlertShown', 'true');
+            }
+        } catch (error) {
+            console.error("Erro ao verificar as configurações de API:", error);
+        }
+    }
+
+    // --- WhatsApp Popup ---
+    async function checkAndShowWhatsappPopup() {
+        if (!appState.currentUser || appState.currentUser.whatsapp) {
+            return; 
+        }
+
+        const modal = document.getElementById('whatsapp-update-modal');
+        const form = document.getElementById('whatsapp-update-form');
+        const feedbackEl = document.getElementById('whatsapp-update-feedback');
+        const formContainer = document.getElementById('whatsapp-form-container');
+        const successContainer = document.getElementById('whatsapp-success-container');
+
+        modal.style.display = 'flex';
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            feedbackEl.textContent = '';
+            const whatsappInput = document.getElementById('update-whatsapp-input');
+            const whatsapp = whatsappInput.value;
+
+            const whatsappRegex = /^\+?[1-9]\d{1,14}$/;
+            const cleanedWhatsapp = whatsapp.replace(/\D/g, '');
+
+            if (!whatsappRegex.test(cleanedWhatsapp) || cleanedWhatsapp.length < 10) {
+                feedbackEl.textContent = 'Por favor, insira um número de WhatsApp válido.';
+                return;
+            }
+
+            try {
+                await apiRequest('/api/user/whatsapp', 'PUT', { whatsapp });
+                
+                appState.currentUser.whatsapp = whatsapp;
+                formContainer.style.display = 'none';
+                successContainer.style.display = 'block';
+
+                setTimeout(() => {
+                    modal.style.display = 'none';
+                }, 2000);
+
+            } catch (error) {
+                feedbackEl.textContent = error.message || 'Ocorreu um erro. Tente novamente.';
+            }
+        });
+    }
+
 
     // --- App Initialization ---
     async function initializeApp(initialAnnouncement = null) {
@@ -535,6 +691,9 @@
         activateAntiCopy();
         
         if(initialAnnouncement) showAnnouncement(initialAnnouncement);
+        
+        await checkAndShowApiAlert();
+        await checkAndShowWhatsappPopup();
     }
 
     // --- UI Building ---
@@ -551,7 +710,6 @@
             { id: 'text-divider', icon: 'M4 6h16M4 12h16M4 18h7', label: 'Divisor de Texto' },
             { type: 'divider', label: 'Sistema' },
             { id: 'settings', icon: 'M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z M15 12a3 3 0 11-6 0 3 3 0 016 0z', label: 'Configurações' },
-            // NOVO: Botão FAQ adicionado
             { id: 'faq', icon: 'M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.79 4 4s-1.79 4-4 4c-1.742 0-3.223-.835-3.772-2H6.5v2H4.5v-2H2.728a1 1 0 010-2h1.772V7H6.5v2h1.728zM12 18a6 6 0 100-12 6 6 0 000 12z', label: 'FAQ' },
         ];
         if (appState.currentUser && appState.currentUser.role === 'admin') {
@@ -592,7 +750,6 @@
         }).join('');
         const suggestionHtml = suggestion ? `<p class="text-xs text-gray-500 mt-3 pt-3 border-t"><strong class="text-gray-600">Virada de Chave:</strong> ${suggestion}</p>` : '';
 
-        // Adicionado 'min-w-0' ao container do card para forçar o 'truncate' a funcionar corretamente dentro de um layout de grade/flex.
         return `<div class="card p-4 w-full flex-shrink-0 min-w-0">
                     <h4 class="font-semibold text-gray-800 mb-2 truncate" title="${title}">${title}</h4>
                     <div class="flex items-center justify-between mb-4">
@@ -822,7 +979,7 @@
                             <button id="generate-script" type="button" class="w-full justify-center py-3 px-4 rounded-lg font-semibold primary-btn">Gerar Roteiro</button>
                         </form>
                         <div id="legend-container" class="mt-6"></div>
-                        <div id="output" class="mt-6"></div>
+                        <div id="output" class="mt-6 allow-copy"></div>
                         <div id="script-pagination-controls" class="flex justify-center items-center gap-4 mt-4"></div>
                         <div id="script-history-container" class="mt-8"></div>
                       </div>` 
@@ -853,15 +1010,66 @@
                             <button id="generate-viral-content" class="w-full justify-center py-3 px-4 rounded-lg font-semibold primary-btn">Gerar Conteúdo</button>
                         </div>
                         <div id="legend-container" class="mt-6"></div>
-                        <div id="output" class="mt-6 space-y-4"></div>
+                        <div id="output" class="mt-6 space-y-4 allow-copy"></div>
                         <button id="generate-more-viral-content" style="display:none;" class="w-full mt-4 bg-gray-200 text-gray-800 font-semibold py-2 px-4 rounded-lg hover:bg-gray-300">Gerar Mais</button>
                     </div>`
         },
-        "scene-prompts": { title: "Prompts para Cenas", desc: "Gere prompts de imagem para o seu roteiro, de forma automática ou manual.", content: `<div class="max-w-3xl mx-auto"><div class="card p-6 space-y-4"><div class="relative"><textarea id="scene-text" class="w-full h-40 px-4 py-3 rounded-lg form-input" placeholder="Cole o roteiro completo aqui..."></textarea><div id="scene-word-counter" class="absolute bottom-2 right-3 text-xs text-gray-500 bg-gray-100 px-2 py-0.5 rounded">0 palavras</div></div><div class="grid grid-cols-1 md:grid-cols-2 gap-4"><select id="scene-platform" class="w-full px-4 py-3 rounded-lg form-input"><option value="Midjourney">Midjourney</option><option value="Leonardo.AI">Leonardo.AI</option><option value="DALL-E 3">DALL-E 3</option><option value="Wisk">Wisk</option><option value="Nano Banana">Nano Banana</option><option value="Flux">Flux</option><option value="Freepik">Freepik</option></select><select id="generation-mode" class="w-full px-4 py-3 rounded-lg form-input"><option value="auto">Geração Automática de Cenas</option><option value="manual">Geração Manual por Palavras</option></select></div><div id="manual-options" class="hidden items-center gap-2"><label class="text-sm">Gerar a cada</label><input type="number" value="100" id="scene-word-count" class="form-input w-20 text-center"><label class="text-sm">palavras.</label><span id="scene-preview" class="text-sm font-medium text-blue-600"></span></div><button id="generate-scene-prompts" class="w-full justify-center py-3 px-4 rounded-lg font-semibold primary-btn">Gerar Prompts de Cena</button></div><div id="output" class="mt-6 space-y-4"></div><div id="scene-pagination-controls" class="flex justify-center items-center gap-4 mt-4"></div></div>` },
-        "thumbnail-prompts": { title: "Prompts de Thumbnail", desc: "Gere prompts otimizados para IAs de imagem.", content: `<div class="max-w-3xl mx-auto"><div class="card p-6 space-y-4"><input type="text" id="thumb-title" class="w-full px-4 py-3 rounded-lg form-input" placeholder="Título do Vídeo"><select id="thumb-platform" class="w-full px-4 py-3 rounded-lg form-input"><option value="Midjourney">Midjourney</option><option value="Leonardo.AI">Leonardo.AI</option><option value="DALL-E 3">DALL-E 3</option><option value="Wisk">Wisk</option><option value="Nano Banana">Nano Banana</option><option value="Flux">Flux</option><option value="Freepik">Freepik</option></select><button id="generate-prompts" class="w-full justify-center py-3 px-4 rounded-lg font-semibold primary-btn">Gerar Prompts</button></div><div id="legend-container" class="mt-6"></div><div id="output" class="mt-6 space-y-4"></div><div id="thumb-actions" class="mt-4"></div><button id="generate-more-prompts" style="display:none;" class="w-full mt-4 bg-gray-200 text-gray-800 font-semibold py-2 px-4 rounded-lg hover:bg-gray-300">Gerar Mais</button></div>` },
-        "srt-converter": { title: "Conversor de SRT", desc: "Converta texto para o formato de legenda .SRT.", content: `<div class="max-w-3xl mx-auto"><div class="card p-6 space-y-4"><textarea id="srt-input-text" class="w-full h-40 px-4 py-3 rounded-lg form-input" placeholder="Cole o texto completo aqui..."></textarea><div class="flex items-center gap-4 justify-center"><label for="srt-char-limit" class="text-sm font-medium text-gray-700">Limite de Caracteres (Automático: 500):</label><input type="number" id="srt-char-limit" class="form-input w-24 text-center" value="500"></div><button id="convert-to-srt" class="w-full justify-center py-3 px-4 rounded-lg font-semibold primary-btn">Converter para SRT</button></div><div id="output" class="mt-6"></div></div>` },
-        "text-divider": { title: "Divisor de Texto", desc: "Analise seu roteiro e divida-o em partes menores para facilitar a narração.", content: `<div class="max-w-3xl mx-auto"><div class="card p-6"><div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6"><div class="bg-gray-100 p-4 rounded-lg text-center"><p class="text-sm text-gray-500">Palavras</p><p id="word-count" class="text-3xl font-bold">0</p></div><div class="bg-gray-100 p-4 rounded-lg text-center"><p class="text-sm text-gray-500">Caracteres</p><p id="char-count" class="text-3xl font-bold">0</p></div><div class="bg-gray-100 p-4 rounded-lg text-center"><p class="text-sm text-gray-500">Tempo de Narração</p><p id="time-estimate" class="text-3xl font-bold">00:00</p></div></div><textarea id="text-divider-input" class="w-full h-40 px-4 py-3 rounded-lg form-input mb-4" placeholder="Cole o roteiro completo aqui..."></textarea><div class="flex flex-wrap items-center justify-center gap-4"><label for="split-chunk-size" class="text-sm">Dividir a cada</label><input type="number" id="split-chunk-size" class="px-3 py-2 rounded-lg form-input w-24 text-center" value="150"><select id="split-chunk-type" class="px-3 py-2 rounded-lg form-input"><option value="word">palavras</option><option value="char">caracteres</option></select><button id="split-text-btn" class="py-2 px-6 rounded-lg font-semibold primary-btn">Dividir</button></div></div><div id="output" class="mt-6 space-y-4"></div></div>` },
-        "settings": { title: "Configurações", desc: "Gerencie e valide as suas chaves de API.", content: `<div class="max-w-3xl mx-auto card p-6 space-y-6"><h3 class="text-lg font-semibold">Chaves de API</h3><div class="space-y-4"><div><label class="block text-sm font-medium text-gray-700">OpenAI API Key (Preferencial) <a href="https://platform.openai.com/api-keys" target="_blank" class="text-blue-600 hover:underline text-xs">(obter)</a></label><input type="password" id="openai-key" class="mt-1 block w-full px-3 py-2 rounded-lg form-input"></div><hr/><div><label class="block text-sm font-medium text-gray-700">Gemini API Key (Principal) <a href="https://aistudio.google.com/app/apikey" target="_blank" class="text-blue-600 hover:underline text-xs">(obter)</a></label><input type="password" id="gemini-key-1" class="mt-1 block w-full px-3 py-2 rounded-lg form-input"></div><div><label class="block text-sm font-medium text-gray-700">Gemini API Key (Reserva 1)</label><input type="password" id="gemini-key-2" class="mt-1 block w-full px-3 py-2 rounded-lg form-input"></div><div><label class="block text-sm font-medium text-gray-700">Gemini API Key (Reserva 2)</label><input type="password" id="gemini-key-3" class="mt-1 block w-full px-3 py-2 rounded-lg form-input"></div></div><button id="save-settings" class="w-full justify-center py-3 px-4 rounded-lg font-semibold primary-btn">Salvar Configurações</button><div id="settings-feedback" class="mt-2 text-sm"></div></div>` },
+        "scene-prompts": { title: "Prompts para Cenas", desc: "Gere prompts de imagem para o seu roteiro, de forma automática ou manual.", content: `<div class="max-w-3xl mx-auto"><div class="card p-6 space-y-4"><div class="relative"><textarea id="scene-text" class="w-full h-40 px-4 py-3 rounded-lg form-input" placeholder="Cole o roteiro completo aqui..."></textarea><div id="scene-word-counter" class="absolute bottom-2 right-3 text-xs text-gray-500 bg-gray-100 px-2 py-0.5 rounded">0 palavras</div></div><div class="grid grid-cols-1 md:grid-cols-2 gap-4"><select id="scene-platform" class="w-full px-4 py-3 rounded-lg form-input"><option value="Midjourney">Midjourney</option><option value="Leonardo.AI">Leonardo.AI</option><option value="DALL-E 3">DALL-E 3</option><option value="Wisk">Wisk</option><option value="Nano Banana">Nano Banana</option><option value="Flux">Flux</option><option value="Freepik">Freepik</option></select><select id="generation-mode" class="w-full px-4 py-3 rounded-lg form-input"><option value="auto">Geração Automática de Cenas</option><option value="manual">Geração Manual por Palavras</option></select></div><div id="manual-options" class="hidden items-center gap-2"><label class="text-sm">Gerar a cada</label><input type="number" value="100" id="scene-word-count" class="form-input w-20 text-center"><label class="text-sm">palavras.</label><span id="scene-preview" class="text-sm font-medium text-blue-600"></span></div><button id="generate-scene-prompts" class="w-full justify-center py-3 px-4 rounded-lg font-semibold primary-btn">Gerar Prompts de Cena</button></div><div id="output" class="mt-6 space-y-4 allow-copy"></div><div id="scene-pagination-controls" class="flex justify-center items-center gap-4 mt-4"></div></div>` },
+        "thumbnail-prompts": { title: "Prompts de Thumbnail", desc: "Gere prompts otimizados para IAs de imagem.", content: `<div class="max-w-3xl mx-auto"><div class="card p-6 space-y-4"><input type="text" id="thumb-title" class="w-full px-4 py-3 rounded-lg form-input" placeholder="Título do Vídeo"><select id="thumb-platform" class="w-full px-4 py-3 rounded-lg form-input"><option value="Midjourney">Midjourney</option><option value="Leonardo.AI">Leonardo.AI</option><option value="DALL-E 3">DALL-E 3</option><option value="Wisk">Wisk</option><option value="Nano Banana">Nano Banana</option><option value="Flux">Flux</option><option value="Freepik">Freepik</option></select><button id="generate-prompts" class="w-full justify-center py-3 px-4 rounded-lg font-semibold primary-btn">Gerar Prompts</button></div><div id="legend-container" class="mt-6"></div><div id="output" class="mt-6 space-y-4 allow-copy"></div><div id="thumb-actions" class="mt-4"></div><button id="generate-more-prompts" style="display:none;" class="w-full mt-4 bg-gray-200 text-gray-800 font-semibold py-2 px-4 rounded-lg hover:bg-gray-300">Gerar Mais</button></div>` },
+        "srt-converter": { title: "Conversor de SRT", desc: "Converta texto para o formato de legenda .SRT.", content: `<div class="max-w-3xl mx-auto"><div class="card p-6 space-y-4"><textarea id="srt-input-text" class="w-full h-40 px-4 py-3 rounded-lg form-input" placeholder="Cole o texto completo aqui..."></textarea><div class="flex items-center gap-4 justify-center"><label for="srt-char-limit" class="text-sm font-medium text-gray-700">Limite de Caracteres (Automático: 500):</label><input type="number" id="srt-char-limit" class="form-input w-24 text-center" value="500"></div><button id="convert-to-srt" class="w-full justify-center py-3 px-4 rounded-lg font-semibold primary-btn">Converter para SRT</button></div><div id="output" class="mt-6 allow-copy"></div></div>` },
+        "text-divider": { title: "Divisor de Texto", desc: "Analise seu roteiro e divida-o em partes menores para facilitar a narração.", content: `<div class="max-w-3xl mx-auto"><div class="card p-6"><div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6"><div class="bg-gray-100 p-4 rounded-lg text-center"><p class="text-sm text-gray-500">Palavras</p><p id="word-count" class="text-3xl font-bold">0</p></div><div class="bg-gray-100 p-4 rounded-lg text-center"><p class="text-sm text-gray-500">Caracteres</p><p id="char-count" class="text-3xl font-bold">0</p></div><div class="bg-gray-100 p-4 rounded-lg text-center"><p class="text-sm text-gray-500">Tempo de Narração</p><p id="time-estimate" class="text-3xl font-bold">00:00</p></div></div><textarea id="text-divider-input" class="w-full h-40 px-4 py-3 rounded-lg form-input mb-4" placeholder="Cole o roteiro completo aqui..."></textarea><div class="flex flex-wrap items-center justify-center gap-4"><label for="split-chunk-size" class="text-sm">Dividir a cada</label><input type="number" id="split-chunk-size" class="px-3 py-2 rounded-lg form-input w-24 text-center" value="150"><select id="split-chunk-type" class="px-3 py-2 rounded-lg form-input"><option value="word">palavras</option><option value="char">caracteres</option></select><button id="split-text-btn" class="py-2 px-6 rounded-lg font-semibold primary-btn">Dividir</button></div></div><div id="output" class="mt-6 space-y-4 allow-copy"></div></div>` },
+        "settings": { title: "Configurações", desc: "Gerencie e valide as suas chaves de API.", content: `<div class="max-w-3xl mx-auto space-y-6">
+            <div id="settings-card" class="card p-6 space-y-6">
+                <h3 class="text-lg font-semibold">Chaves de API</h3>
+                <div class="space-y-4">
+                    <div><label class="block text-sm font-medium text-gray-700">OpenAI API Key (Preferencial) <a href="https://platform.openai.com/api-keys" target="_blank" class="text-blue-600 hover:underline text-xs">(obter)</a></label><input type="password" id="openai-key" class="mt-1 block w-full px-3 py-2 rounded-lg form-input"></div>
+                    <hr/>
+                    <div><label class="block text-sm font-medium text-gray-700">Gemini API Key (Principal) <a href="https://aistudio.google.com/app/apikey" target="_blank" class="text-blue-600 hover:underline text-xs">(obter)</a></label><input type="password" id="gemini-key-1" class="mt-1 block w-full px-3 py-2 rounded-lg form-input"></div>
+                    <div><label class="block text-sm font-medium text-gray-700">Gemini API Key (Reserva 1)</label><input type="password" id="gemini-key-2" class="mt-1 block w-full px-3 py-2 rounded-lg form-input"></div>
+                    <div><label class="block text-sm font-medium text-gray-700">Gemini API Key (Reserva 2)</label><input type="password" id="gemini-key-3" class="mt-1 block w-full px-3 py-2 rounded-lg form-input"></div>
+                </div>
+                <button id="save-settings" class="w-full justify-center py-3 px-4 rounded-lg font-semibold primary-btn">Salvar Configurações</button>
+                <div id="settings-feedback" class="mt-2 text-sm"></div>
+            </div>
+            <div class="mt-6 space-y-4">
+                <details class="bg-gray-50 rounded-lg p-4 border">
+                    <summary class="font-semibold cursor-pointer text-gray-800 list-none flex justify-between items-center">
+                        Como obter uma API Key do Gemini? (Tutorial Rápido)
+                        <svg class="w-5 h-5 transition-transform transform details-arrow" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" /></svg>
+                    </summary>
+                    <div class="mt-4 text-sm text-gray-600 space-y-2 prose prose-sm max-w-none">
+                        <p>Siga estes passos para criar sua chave de API gratuita no Google AI Studio:</p>
+                        <ol class="list-decimal pl-5 space-y-1">
+                            <li>Acesse o <a href="https://aistudio.google.com/app/apikey" target="_blank" class="text-blue-600 hover:underline font-medium">Google AI Studio</a> e faça login com sua conta Google.</li>
+                            <li>No menu à esquerda, clique em <strong>"Get API key"</strong>.</li>
+                            <li>Clique no botão <strong>"Create API key in new project"</strong>.</li>
+                            <li>Aguarde um instante e sua chave será gerada. Copie a chave (uma longa sequência de letras e números).</li>
+                            <li>Cole a chave no campo "Gemini API Key (Principal)" acima e salve as configurações.</li>
+                        </ol>
+                        <p>Pronto! Agora a plataforma pode usar o poder do Gemini para gerar seus roteiros.</p>
+                    </div>
+                </details>
+                <details class="bg-yellow-50 rounded-lg p-4 border border-yellow-200">
+                    <summary class="font-semibold cursor-pointer text-yellow-800 list-none flex justify-between items-center">
+                        Não conseguiu? Siga este tutorial alternativo (Google Cloud)
+                        <svg class="w-5 h-5 transition-transform transform details-arrow" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" /></svg>
+                    </summary>
+                    <div class="mt-4 text-sm text-yellow-700 space-y-2 prose prose-sm max-w-none">
+                        <p>Algumas contas Google precisam primeiro de um projeto no Google Cloud. Se o método rápido não funcionou, siga estes passos:</p>
+                        <ol class="list-decimal pl-5 space-y-1">
+                            <li>Acesse o <a href="https://console.cloud.google.com/" target="_blank" class="text-blue-600 hover:underline font-medium">Google Cloud Console</a>.</li>
+                            <li>No topo da página, clique no seletor de projetos (ao lado do logo do Google Cloud) e depois em <strong>"NOVO PROJETO"</strong>.</li>
+                            <li>Dê um nome ao seu projeto (ex: "DarkScript-AI-Project") e clique em <strong>"CRIAR"</strong>.</li>
+                            <li>Na barra de busca no topo, procure por "Generative Language API" e selecione-a. Clique em <strong>"ATIVAR"</strong> (ENABLE).</li>
+                            <li>Agora, volte para o <a href="https://aistudio.google.com/app/apikey" target="_blank" class="text-blue-600 hover:underline font-medium">Google AI Studio</a>.</li>
+                            <li>Clique em <strong>"Get API key"</strong> novamente. Desta vez, você poderá selecionar o projeto que acabou de criar para gerar sua chave.</li>
+                            <li>Copie a chave e cole no campo "Gemini API Key (Principal)" acima.</li>
+                        </ol>
+                    </div>
+                </details>
+            </div>
+            <style>details[open] .details-arrow { transform: rotate(180deg); }</style>
+        </div>` },
         "admin": { title: "Painel Administrativo", desc: "Gerir utilizadores e configurações da aplicação.", content: `<div id="admin-container" class="space-y-6"></div>` },
         "faq": {
             title: "FAQ - Perguntas Frequentes",
@@ -974,7 +1182,7 @@
         if (controlsContainer) controlsContainer.innerHTML = '';
 
         const { fullResult, currentPage, partsPerPage } = scriptResults;
-        const narrationOnly = document.getElementById('script-narration').checked; // Captura o estado do checkbox
+        const narrationOnly = document.getElementById('script-narration').checked;
 
         if (!fullResult || !fullResult.script_parts || fullResult.script_parts.length === 0) {
             output.innerHTML = '<div class="card p-4 text-center text-gray-500">Nenhum roteiro gerado.</div>';
@@ -998,7 +1206,6 @@
         let scriptHtml = '';
 
         if (narrationOnly) {
-            // Se "Apenas Narração" estiver marcado, exibe o roteiro completo em um único card, sem paginação.
             scriptHtml = `
             <div class="card mb-4">
                 <div class="p-6">
@@ -1006,9 +1213,8 @@
                     <div class="prose prose-sm max-w-none text-gray-700 leading-relaxed space-y-4">${fullResult.full_script_text.split('\n\n').map(p => `<p>${p}</p>`).join('')}</div>
                 </div>
             </div>`;
-            if (controlsContainer) controlsContainer.innerHTML = ''; // Garante que a paginação seja removida
+            if (controlsContainer) controlsContainer.innerHTML = ''; 
         } else {
-            // Lógica original para roteiro estruturado com paginação
             const parts = fullResult.script_parts;
             const totalPages = Math.ceil(parts.length / partsPerPage);
             
@@ -1467,7 +1673,7 @@
 
             const prompt = `Gere 2 prompts AVANÇADOS em INGLÊS para a IA '${platform}' para uma thumbnail sobre "${title}". Siga esta diretriz de estilo para otimizar o prompt: "${platformConfigs[platform]}". Para cada prompt, forneça:
             1.  'score': uma pontuação de potencial de CTR (0-100).
-            2.  'suggestion': uma "virada de chave" (melhoria principal) em PORTUGUÊS, BEM CURTA, com no máximo 5 linhas.`;
+            2.  'suggestion': uma "virada de chave" (melhoria principal) em PORTUGÊS, BEM CURTA, com no máximo 5 linhas.`;
             
             const schema = { type: "ARRAY", items: { type: "OBJECT", properties: { prompt: { type: "STRING" }, score: { type: "NUMBER" }, suggestion: { type: "STRING" } } } };
             
@@ -1632,7 +1838,7 @@
             document.getElementById('include-affiliate-product').addEventListener('change', (e) => {
                 document.getElementById('affiliate-product-container').style.display = e.target.checked ? 'block' : 'none';
             });
-            renderScriptHistory(); // Render history on tab load
+            renderScriptHistory(); 
         }
         if (tabId === 'scene-prompts'){
            initializeScenePrompts();
@@ -1647,7 +1853,7 @@
             }
         }
         
-        thumbnailPromptResults.data = []; // Reset thumbnail prompts on tab change
+        thumbnailPromptResults.data = []; 
         thumbnailPromptResults.allPromptsText = '';
 
         const outputEl = document.getElementById('output');
@@ -1768,6 +1974,42 @@
         updateAnalytics();
     }
 
+    function showEditUserModal(user) {
+        const modal = document.getElementById('edit-user-modal');
+        const form = document.getElementById('edit-user-form');
+        const feedbackEl = document.getElementById('edit-user-feedback');
+        
+        feedbackEl.textContent = '';
+        document.getElementById('edit-user-id').value = user.id;
+        document.getElementById('edit-user-email').value = user.email;
+        document.getElementById('edit-user-whatsapp').value = user.whatsapp || '';
+        
+        modal.style.display = 'flex';
+
+        const newForm = form.cloneNode(true);
+        form.parentNode.replaceChild(newForm, form);
+
+        newForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const userId = document.getElementById('edit-user-id').value;
+            const newEmail = document.getElementById('edit-user-email').value;
+            const newWhatsapp = document.getElementById('edit-user-whatsapp').value;
+            
+            try {
+                await apiRequest(`/api/admin/user/${userId}`, 'PUT', { email: newEmail, whatsapp: newWhatsapp });
+                showSuccessToast('Utilizador atualizado com sucesso!');
+                modal.style.display = 'none';
+                initializeAdminPanel(); // Refresh the list
+            } catch (error) {
+                document.getElementById('edit-user-feedback').textContent = error.message;
+            }
+        });
+
+        document.getElementById('cancel-edit-btn').addEventListener('click', () => {
+            modal.style.display = 'none';
+        }, { once: true });
+    }
+
     async function initializeAdminPanel() {
         const container = document.getElementById('admin-container');
         container.innerHTML = `<div class="card p-4 text-center">A carregar dados do painel...</div>`;
@@ -1805,6 +2047,12 @@
                         </div>
                     </div>
                 </div>
+
+                <div class="card p-4">
+                    <h3 class="text-lg font-semibold mb-2">Buscar Utilizadores</h3>
+                    <input type="text" id="admin-search-input" class="w-full px-3 py-2 rounded-lg form-input" placeholder="Buscar por e-mail ou WhatsApp...">
+                </div>
+
                 <div id="pending-users-container"></div>
                 <div id="active-users-container"></div>
             `;
@@ -1812,11 +2060,32 @@
             await fetchAndRenderUsers('pending');
             await fetchAndRenderUsers('active');
 
+            document.getElementById('admin-search-input').addEventListener('input', (e) => {
+                const searchTerm = e.target.value.toLowerCase().trim();
+                document.querySelectorAll('#admin-container table tbody tr').forEach(row => {
+                    const email = row.cells[0].textContent.toLowerCase();
+                    const whatsapp = row.cells[1].textContent.toLowerCase();
+                    if (email.includes(searchTerm) || whatsapp.includes(searchTerm)) {
+                        row.style.display = '';
+                    } else {
+                        row.style.display = 'none';
+                    }
+                });
+            });
+
             container.addEventListener('click', async (e) => {
+                 if (e.target.matches('.edit-user-btn')) {
+                    const user = {
+                        id: e.target.dataset.userId,
+                        email: e.target.dataset.userEmail,
+                        whatsapp: e.target.dataset.userWhatsapp,
+                    };
+                    showEditUserModal(user);
+                }
                  if (e.target.matches('.user-status-toggle')) {
                     const { userid, isActive } = e.target.dataset;
                     await apiRequest(`/api/admin/user/${userid}/status`, 'PUT', { isActive: isActive === 'true' });
-                    initializeAdminPanel(); // Recarrega todo o painel
+                    initializeAdminPanel(); 
                 }
                 if (e.target.matches('.delete-user-btn')) {
                     const { userid, email } = e.target.dataset;
@@ -1831,7 +2100,7 @@
                     const roleText = role === 'admin' ? 'Administrador' : 'Utilizador';
                     showConfirmationModal(`Alterar Cargo de Utilizador`, `Tem a certeza que deseja ${actionText} ${email} para o cargo de ${roleText}?`, async () => {
                         await apiRequest(`/api/admin/user/${userid}/role`, 'PUT', { role });
-                        initializeAdminPanel(); // Recarrega o painel
+                        initializeAdminPanel(); 
                     });
                 }
                 if (e.target.id === 'approve-all-btn') {
@@ -1881,6 +2150,7 @@
                     <thead class="text-left bg-gray-50">
                         <tr>
                             <th class="p-2 font-semibold">Email</th>
+                            <th class="p-2 font-semibold">WhatsApp</th>
                             <th class="p-2 font-semibold">Cargo</th>
                             <th class="p-2 font-semibold">Data de Registro</th>
                             <th class="p-2 font-semibold">Último Login</th>
@@ -1891,9 +2161,15 @@
                     ${response.data.map(u => {
                         const createdAt = u.created_at ? new Date(u.created_at).toLocaleString('pt-BR') : 'N/A';
                         const lastLoginAt = u.last_login_at ? new Date(u.last_login_at).toLocaleString('pt-BR') : 'Nunca';
+                        
+                        const whatsappNumber = u.whatsapp || '';
+                        const cleanedWhatsapp = whatsappNumber.replace(/\D/g, '');
+                        const whatsappLink = cleanedWhatsapp 
+                            ? `<a href="https://wa.me/${cleanedWhatsapp}" target="_blank" class="text-blue-600 hover:underline">${whatsappNumber}</a>` 
+                            : 'N/A';
 
                         let roleButton = '';
-                        if (u.id !== 1 && u.id !== appState.currentUser.id) { // Cannot change main admin or self
+                        if (u.id !== 1 && u.id !== appState.currentUser.id) {
                             if (u.role === 'user') {
                                 roleButton = `<button class="user-role-toggle text-xs font-medium text-blue-600 hover:underline" data-userid="${u.id}" data-role="admin" data-email="${u.email}">Tornar Admin</button>`;
                             } else {
@@ -1904,10 +2180,12 @@
                         return `
                         <tr class="border-t">
                             <td class="p-2">${u.email}</td>
+                            <td class="p-2">${whatsappLink}</td>
                             <td class="p-2 capitalize">${u.role}</td>
                             <td class="p-2">${createdAt}</td>
                             <td class="p-2">${lastLoginAt}</td>
                             <td class="p-2 space-x-2 text-right">
+                                <button class="edit-user-btn text-xs font-medium text-blue-600 hover:underline" data-user-id="${u.id}" data-user-email="${u.email}" data-user-whatsapp="${u.whatsapp || ''}">Editar</button>
                                 ${roleButton}
                                 ${u.is_active ? 
                                   `<button class="user-status-toggle text-xs font-medium text-yellow-600 hover:underline" data-userid="${u.id}" data-is-active="false">Bloquear</button>` :
@@ -1968,7 +2246,7 @@
             });
         });
     }
-    
+
     // --- Session Persistence & Initial Load ---
     async function checkSession() {
         const token = localStorage.getItem('authToken');
@@ -2021,6 +2299,17 @@
         }
     });
 
+    document.getElementById('close-api-alert-btn').addEventListener('click', () => {
+        document.getElementById('api-alert-modal').style.display = 'none';
+    });
+    document.getElementById('go-to-settings-btn').addEventListener('click', () => {
+        document.getElementById('api-alert-modal').style.display = 'none';
+        const settingsButton = document.querySelector('.sidebar-btn[data-tab="settings"]');
+        if (settingsButton) {
+            settingsButton.click();
+        }
+    });
+
     document.getElementById('tab-content').addEventListener('click', (e) => {
         const copyBtn = e.target.closest('.copy-btn, .prompt-copy-btn');
         if (copyBtn) {
@@ -2030,7 +2319,6 @@
             });
         }
         
-        // Script Writer Action Buttons
         if (e.target.id === 'copy-script-btn' && scriptResults.fullResult) {
             navigator.clipboard.writeText(scriptResults.fullResult.full_script_text).then(() => {
                 showSuccessToast("Roteiro copiado!");
@@ -2062,7 +2350,6 @@
             }
         }
 
-        // Scene Prompts Action Buttons
         if (e.target.id === 'copy-all-scene-prompts') {
             navigator.clipboard.writeText(scenePromptResults.allPromptsText).then(() => {
                 showSuccessToast("Todos os prompts foram copiados!");
@@ -2072,7 +2359,6 @@
             downloadFile(scenePromptResults.allPromptsText, 'prompts_de_cena.txt');
         }
 
-        // Thumbnail Prompts Action Buttons
         if (e.target.id === 'download-thumb-prompts') {
             downloadFile(thumbnailPromptResults.allPromptsText, 'prompts_de_thumbnail.txt');
         }
@@ -2090,3 +2376,4 @@
     </script>
 </body>
 </html>
+

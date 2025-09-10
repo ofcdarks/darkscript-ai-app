@@ -447,21 +447,18 @@ app.put('/api/admin/user/:userId', verifyToken, requireAdmin, (req, res) => {
     const { userId } = req.params;
     const { email, whatsapp } = req.body;
 
-    // Email é obrigatório, mas WhatsApp pode ser vazio para que o admin possa limpá-lo.
-    if (!email) {
-        return res.status(400).json({ message: 'Email é obrigatório.' });
+    if (!email || !whatsapp) {
+        return res.status(400).json({ message: 'Email e WhatsApp são obrigatórios.' });
     }
     
-    // Se um número de WhatsApp for fornecido (não vazio), valide-o.
-    if (whatsapp && whatsapp.trim() !== '') {
-        const whatsappRegex = /^\+?[1-9]\d{1,14}$/;
-        const cleanedWhatsapp = whatsapp.replace(/\D/g, '');
-        if (!whatsappRegex.test(cleanedWhatsapp) || cleanedWhatsapp.length < 10) {
-             return res.status(400).json({ message: 'Número de WhatsApp inválido.' });
-        }
+    // Simple validation
+    const whatsappRegex = /^\+?[1-9]\d{1,14}$/;
+    const cleanedWhatsapp = whatsapp.replace(/\D/g, '');
+    if (!whatsappRegex.test(cleanedWhatsapp) || cleanedWhatsapp.length < 10) {
+         return res.status(400).json({ message: 'Número de WhatsApp inválido.' });
     }
 
-    db.run('UPDATE users SET email = ?, whatsapp = ? WHERE id = ?', [email, whatsapp || '', userId], function(err) {
+    db.run('UPDATE users SET email = ?, whatsapp = ? WHERE id = ?', [email, whatsapp, userId], function(err) {
         if (err) {
             if (err.message.includes('UNIQUE constraint failed')) {
                 return res.status(409).json({ message: 'Este e-mail já está em uso por outro utilizador.' });
